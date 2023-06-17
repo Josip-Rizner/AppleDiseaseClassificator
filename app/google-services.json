@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "438434006133",
+    "firebase_url": "https://applediseaseclassificator-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "applediseaseclassificator",
+    "storage_bucket": "applediseaseclassificator.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:438434006133:android:95b43d3459ea469214243c",
+        "android_client_info": {
+          "package_name": "com.example.applediseaseclassificator"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB56zkLkr70ZkRt82eXurENXew5psjfAMc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
