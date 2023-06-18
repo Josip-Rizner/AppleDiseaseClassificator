@@ -3,13 +3,102 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/purple_200"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/white"
     tools:context=".SecondFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="Second fragment" />
+        android:orientation="vertical"
+        android:padding="50dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Use current location:"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/swUseCurrentLocation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:thumb="@drawable/switch_thumb"
+                app:track="@drawable/switch_track" />
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/llSetLocation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+
+            <EditText
+                android:id="@+id/etEnterCity"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.8"
+                android:hint="Enter the location"/>
+
+            <Button
+                android:id="@+id/btnFetchWeather"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Fetch"/>
+
+
+        </LinearLayout>
+
+
+        <TextView
+            android:id="@+id/tvCity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:layout_marginTop="10dp"
+            android:textSize="30sp"
+            android:text="City" />
+
+        <TextView
+            android:id="@+id/tvTemperature"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:layout_marginTop="10dp"
+            android:textSize="30sp"
+            android:text="Temperature" />
+
+        <TextView
+            android:id="@+id/tvWeatherState"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:layout_marginTop="10dp"
+            android:textSize="30sp"
+            android:text="Weather" />
+
+        <ImageView
+            android:id="@+id/ivWeatherState"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/clear_sky"/>
+
+
+
+    </LinearLayout>
+
 
 </FrameLayout>

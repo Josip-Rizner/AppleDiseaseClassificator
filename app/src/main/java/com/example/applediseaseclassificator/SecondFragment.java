@@ -1,19 +1,64 @@
 package com.example.applediseaseclassificator;
 
+import android.Manifest;
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.widget.SwitchCompat;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link SecondFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.JsonHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
+
+import org.json.JSONObject;
+
+import cz.msebera.android.httpclient.Header;
+
 public class SecondFragment extends Fragment {
+
+
+    final String API_KEY = "8edb0515f032b02779527dc60e0023e4";
+    final String WEATHER_URL = "https://api.openweathermap.org/data/2.5/weather";
+    final String CITY_LOCATION_URL = "http://api.openweathermap.org/geo/1.0/direct";
+
+    final long MIN_TIME = 300000;
+    final float MIN_DISTANCE = 1000;
+    final int REQUEST_CODE = 101;
+
+    String location_provider = LocationManager.GPS_PROVIDER;
+
+    TextView tvCity, tvWeatherState, tvTemperature;
+    ImageView ivWeatherState;
+
+    SwitchCompat swUseCurrentLocation;
+    EditText etEnterCity;
+    Button btnFetchWeather;
+    LinearLayout llSetLocation;
+
+
+    LocationManager locationManager;
+    LocationListener locationListener;
+
+    CityInformation cityInformationTest;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -28,15 +73,7 @@ public class SecondFragment extends Fragment {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment SecondFragment.
-     */
-    // TODO: Rename and change types and number of parameters
+
     public static SecondFragment newInstance(String param1, String param2) {
         SecondFragment fragment = new SecondFragment();
         Bundle args = new Bundle();
@@ -56,9 +93,184 @@ public class SecondFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_second, container, false);
+        View view = inflater.inflate(R.layout.fragment_second, container, false);
+
+        tvWeatherState = view.findViewById(R.id.tvWeatherState);
+        tvTemperature = view.findViewById(R.id.tvTemperature);
+        tvCity = view.findViewById(R.id.tvCity);
+        ivWeatherState = view.findViewById(R.id.ivWeatherState);
+        llSetLocation = view.findViewById(R.id.llSetLocation);
+        swUseCurrentLocation = view.findViewById(R.id.swUseCurrentLocation);
+        etEnterCity = view.findViewById(R.id.etEnterCity);
+        btnFetchWeather = view.findViewById(R.id.btnFetchWeather);
+
+        swUseCurrentLocation.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                if(isChecked){
+                    llSetLocation.setVisibility(View.GONE);
+                    Toast.makeText(getActivity(), "Fetching data for current location", Toast.LENGTH_SHORT).show();
+                    getWeatherForCurrentLocation();
+                }
+                else{
+                    llSetLocation.setVisibility(View.VISIBLE);
+                }
+
+            }
+        });
+
+        btnFetchWeather.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (TextUtils.isEmpty(etEnterCity.getText().toString())) {
+                    etEnterCity.setError("Please enter the City");
+                    etEnterCity.requestFocus();
+                    return;
+                }
+                getWeatherForCurrentLocation();
+            }
+        });
+
+        getWeatherForCurrentLocation();
+
+        return view;
+    }
+
+    private void getWeatherForCurrentLocation() {
+
+        if(!swUseCurrentLocation.isChecked()){
+            String city = etEnterCity.getText().toString().trim();
+            RequestParams cityParams = new RequestParams();
+            cityParams.put("q", city);
+            cityParams.put("limit", "1");
+            cityParams.put("appid", API_KEY);
+            getCityCoordinates(cityParams);
+            String latitude = Double.toString(cityInformationTest.getLatitude());
+            String longitude = Double.toString(cityInformationTest.getLongitude());
+            createWeatherRequest(latitude, longitude);
+            return;
+        }
+
+        locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+
+        locationListener = new LocationListener() {
+            //test
+            @Override
+            public void onLocationChanged(@NonNull Location location) {
+
+                String latitude = String.valueOf(location.getLatitude());
+                String longitude = String.valueOf(location.getLongitude());
+
+                createWeatherRequest(latitude, longitude);
+            }
+
+            @Override
+            public void onProviderDisabled(@NonNull String provider) {
+                LocationListener.super.onProviderDisabled(provider);
+                Toast.makeText(getActivity(), "Location turned off", Toast.LENGTH_SHORT).show();
+            }
+        };
+
+        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.CAMERA}, 100);
+
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
+            return;
+        }
+        locationManager.requestLocationUpdates(location_provider, MIN_TIME, MIN_DISTANCE, locationListener);
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if(requestCode == REQUEST_CODE){
+            if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                Toast.makeText(getActivity(), "Location on", Toast.LENGTH_SHORT).show();
+                getWeatherForCurrentLocation();
+            }
+        }
+        else{
+            Toast.makeText(getActivity(), "Da Fuuuuck", Toast.LENGTH_SHORT).show();
+            //User denied permission
+        }
+    }
+
+    private void getCityCoordinates(RequestParams params){
+        AsyncHttpClient client = new AsyncHttpClient();
+        client.get(CITY_LOCATION_URL, params, new JsonHttpResponseHandler(){
+
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                onSuccess(statusCode, headers, response);
+                cityInformationTest = CityInformation.fromJson(response);
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                onFailure(statusCode, headers, throwable, errorResponse);
+                Toast.makeText(getActivity(), "Can't fetch City coordinates, please check if you spelled it correctly", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void fetchCurrentweatherData(RequestParams params){
+
+        AsyncHttpClient client = new AsyncHttpClient();
+        client.get(WEATHER_URL, params, new JsonHttpResponseHandler(){
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                super.onSuccess(statusCode, headers, response);
+                Toast.makeText(getActivity(), "Data fetched successfully ", Toast.LENGTH_SHORT).show();
+
+                WeatherData weatherData = WeatherData.fromJson(response);
+                updateUI(weatherData);
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                super.onFailure(statusCode, headers, throwable, errorResponse);
+
+                Toast.makeText(getActivity(), "Data NOT fetched", Toast.LENGTH_SHORT).show();
+
+            }
+        });
+    }
+
+    private void createWeatherRequest(String latitude, String longitude){
+        RequestParams params = new RequestParams();
+
+        params.put("lat", latitude);
+        params.put("lon", longitude);
+        params.put("units", "metric");
+        params.put("appid", API_KEY);
+
+        fetchCurrentweatherData(params);
+    }
+
+    private void updateUI(WeatherData weatherData){
+        tvTemperature.setText(weatherData.getTemperature());
+        tvCity.setText(weatherData.getCity());
+        tvWeatherState.setText(weatherData.getWeatherType());
+        int resourceId = getResources().getIdentifier(weatherData.getIcon(), "drawable", getActivity().getPackageName());
+        ivWeatherState.setImageResource(resourceId);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        if(locationManager != null){
+            locationManager.removeUpdates(locationListener);
+        }
     }
 }
