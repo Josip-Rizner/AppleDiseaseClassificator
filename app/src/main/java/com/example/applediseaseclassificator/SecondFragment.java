@@ -29,16 +29,16 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import cz.msebera.android.httpclient.Header;
 
 public class SecondFragment extends Fragment {
 
-
     final String API_KEY = "8edb0515f032b02779527dc60e0023e4";
     final String WEATHER_URL = "https://api.openweathermap.org/data/2.5/weather";
-    final String CITY_LOCATION_URL = "http://api.openweathermap.org/geo/1.0/direct";
+    final String CITY_LOCATION_URL = "https://api.openweathermap.org/geo/1.0/direct";
 
     final long MIN_TIME = 300000;
     final float MIN_DISTANCE = 1000;
@@ -58,7 +58,7 @@ public class SecondFragment extends Fragment {
     LocationManager locationManager;
     LocationListener locationListener;
 
-    CityInformation cityInformationTest;
+    LoadingDialog loadingDialog;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -112,6 +112,8 @@ public class SecondFragment extends Fragment {
         etEnterCity = view.findViewById(R.id.etEnterCity);
         btnFetchWeather = view.findViewById(R.id.btnFetchWeather);
 
+        loadingDialog = new LoadingDialog(getActivity());
+
         swUseCurrentLocation.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
@@ -148,14 +150,7 @@ public class SecondFragment extends Fragment {
 
         if(!swUseCurrentLocation.isChecked()){
             String city = etEnterCity.getText().toString().trim();
-            RequestParams cityParams = new RequestParams();
-            cityParams.put("q", city);
-            cityParams.put("limit", "1");
-            cityParams.put("appid", API_KEY);
-            getCityCoordinates(cityParams);
-            String latitude = Double.toString(cityInformationTest.getLatitude());
-            String longitude = Double.toString(cityInformationTest.getLongitude());
-            createWeatherRequest(latitude, longitude);
+            createCityLocationRequest(city);
             return;
         }
 
@@ -205,43 +200,51 @@ public class SecondFragment extends Fragment {
         }
     }
 
-    private void getCityCoordinates(RequestParams params){
-        AsyncHttpClient client = new AsyncHttpClient();
-        client.get(CITY_LOCATION_URL, params, new JsonHttpResponseHandler(){
-
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                onSuccess(statusCode, headers, response);
-                cityInformationTest = CityInformation.fromJson(response);
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                onFailure(statusCode, headers, throwable, errorResponse);
-                Toast.makeText(getActivity(), "Can't fetch City coordinates, please check if you spelled it correctly", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    private void fetchCurrentweatherData(RequestParams params){
+    private void fetchData(RequestParams params, String URL){
 
         AsyncHttpClient client = new AsyncHttpClient();
-        client.get(WEATHER_URL, params, new JsonHttpResponseHandler(){
+        client.get(URL, params, new JsonHttpResponseHandler(){
+
+            @Override
+            public void onStart() {
+                super.onStart();
+                loadingDialog.showLoadingDialog();
+            }
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 super.onSuccess(statusCode, headers, response);
                 Toast.makeText(getActivity(), "Data fetched successfully ", Toast.LENGTH_SHORT).show();
-
                 WeatherData weatherData = WeatherData.fromJson(response);
                 updateUI(weatherData);
             }
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
+                super.onSuccess(statusCode, headers, response);
 
+                Toast.makeText(getActivity(), "Data fetched successfully ", Toast.LENGTH_SHORT).show();
+                CityInformation cityInformation = CityInformation.fromJson(response);
+                String latitude = Double.toString(cityInformation.getLatitude());
+                String longitude = Double.toString(cityInformation.getLongitude());
+                createWeatherRequest(latitude, longitude);
+            }
             @Override
             public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
                 super.onFailure(statusCode, headers, throwable, errorResponse);
 
                 Toast.makeText(getActivity(), "Data NOT fetched", Toast.LENGTH_SHORT).show();
 
+            }
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONArray errorResponse) {
+                super.onFailure(statusCode, headers, throwable, errorResponse);
+
+                Toast.makeText(getActivity(), "Data NOT fetched", Toast.LENGTH_SHORT).show();
+
+            }
+            @Override
+            public void onFinish() {
+                super.onFinish();
+                loadingDialog.dismissLoadingDialog();
             }
         });
     }
@@ -254,7 +257,16 @@ public class SecondFragment extends Fragment {
         params.put("units", "metric");
         params.put("appid", API_KEY);
 
-        fetchCurrentweatherData(params);
+        fetchData(params, WEATHER_URL);
+    }
+
+    private  void createCityLocationRequest(String cityName){
+        RequestParams params = new RequestParams();
+        params.put("q", cityName);
+        params.put("limit", 1);
+        params.put("appid", API_KEY);
+
+        fetchData(params, CITY_LOCATION_URL);
     }
 
     private void updateUI(WeatherData weatherData){
