@@ -20,6 +20,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -53,6 +54,7 @@ public class SecondFragment extends Fragment {
     EditText etEnterCity;
     Button btnFetchWeather;
     LinearLayout llSetLocation;
+    ImageButton ibRefresh;
 
 
     LocationManager locationManager;
@@ -111,6 +113,7 @@ public class SecondFragment extends Fragment {
         swUseCurrentLocation = view.findViewById(R.id.swUseCurrentLocation);
         etEnterCity = view.findViewById(R.id.etEnterCity);
         btnFetchWeather = view.findViewById(R.id.btnFetchWeather);
+        ibRefresh = view.findViewById(R.id.ibRefresh);
 
         loadingDialog = new LoadingDialog(getActivity());
 
@@ -137,6 +140,13 @@ public class SecondFragment extends Fragment {
                     etEnterCity.requestFocus();
                     return;
                 }
+                getWeatherForCurrentLocation();
+            }
+        });
+
+        ibRefresh.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
                 getWeatherForCurrentLocation();
             }
         });
@@ -220,6 +230,10 @@ public class SecondFragment extends Fragment {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
                 super.onSuccess(statusCode, headers, response);
+                if(response.length() == 0){
+                    Toast.makeText(getActivity(), "Please check if you spelled City name correctly", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
                 Toast.makeText(getActivity(), "Data fetched successfully ", Toast.LENGTH_SHORT).show();
                 CityInformation cityInformation = CityInformation.fromJson(response);

@@ -24,7 +24,8 @@
                 android:gravity="center"
                 android:text="Use current location:"
                 android:textSize="20sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:layout_weight="0.6"/>
 
             <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/swUseCurrentLocation"
@@ -34,6 +35,15 @@
                 android:thumb="@drawable/switch_thumb"
                 app:track="@drawable/switch_track" />
 
+            <ImageButton
+                android:id="@+id/ibRefresh"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:scaleY="1.5"
+                android:scaleX="1.5"
+                android:layout_margin="5dp"
+                android:background="@drawable/ic_baseline_refresh_24"
+                android:layout_gravity="center_vertical"/>
 
         </LinearLayout>
 
@@ -43,7 +53,6 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:visibility="gone">
-
 
             <EditText
                 android:id="@+id/etEnterCity"
@@ -94,6 +103,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
+            android:layout_gravity="center_horizontal"
             android:background="@drawable/clear_sky"/>
 
 
