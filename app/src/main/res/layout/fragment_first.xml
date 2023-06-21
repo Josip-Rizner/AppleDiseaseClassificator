@@ -14,13 +14,17 @@
         <ImageView
         android:id="@+id/ivImage"
         android:layout_width="match_parent"
-        android:layout_height="300dp"/>
+        android:background="@drawable/logo"
+        android:layout_height="300dp" />
 
          <TextView
              android:id="@+id/tvClass"
              android:layout_width="match_parent"
              android:layout_height="wrap_content"
-             android:text="Class"
+             android:textStyle="bold"
+             android:layout_marginTop="10dp"
+             android:textSize="30sp"
+             android:text="-"
              android:gravity="center_horizontal"
              android:layout_margin="5dp"/>
 

@@ -8,6 +8,7 @@ import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -20,6 +21,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.applediseaseclassificator.ml.Model;
 
@@ -36,7 +38,6 @@ public class FirstFragment extends Fragment {
     Button btnOpenCamera, btnOpenGallery;
     ImageView ivImage;
     TextView tvClass;
-    Bitmap image2;
     int imageSize = 128;
 
     // TODO: Rename parameter arguments, choose names that match
@@ -171,7 +172,6 @@ public class FirstFragment extends Fragment {
             int dimension = Math.min(image.getWidth(), image.getHeight());
             image = ThumbnailUtils.extractThumbnail(image, dimension, dimension);
             ivImage.setImageBitmap(image);
-            image2 = image;
 
             image = Bitmap.createScaledBitmap(image, imageSize, imageSize, false);
             classifyImage(image);
