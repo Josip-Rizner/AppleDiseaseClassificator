@@ -24,9 +24,10 @@
         android:layout_height="wrap_content"
         android:inputType="text"
         android:padding="10dp"
-        android:background="@drawable/edit_text_round"
+        android:background="@drawable/custom_input"
         android:layout_margin="2dp"
-        android:drawableLeft="@drawable/ic_baseline_person_24"
+        android:drawableStart="@drawable/custom_person_icon"
+        android:paddingStart="12dp"
         android:hint="@string/first_name"/>
 
     <EditText
@@ -35,9 +36,10 @@
         android:layout_height="wrap_content"
         android:inputType="text"
         android:padding="10dp"
-        android:background="@drawable/edit_text_round"
+        android:background="@drawable/custom_input"
         android:layout_margin="2dp"
-        android:drawableLeft="@drawable/ic_baseline_person_24"
+        android:drawableStart="@drawable/custom_person_icon"
+        android:paddingStart="12dp"
         android:hint="@string/last_name"/>
 
     <EditText
@@ -46,9 +48,10 @@
         android:layout_height="wrap_content"
         android:inputType="textEmailAddress"
         android:padding="10dp"
-        android:background="@drawable/edit_text_round"
+        android:background="@drawable/custom_input"
         android:layout_margin="2dp"
-        android:drawableLeft="@drawable/ic_baseline_email_24"
+        android:drawableStart="@drawable/custom_email_icon"
+        android:paddingStart="12dp"
         android:hint="@string/e_mail"/>
 
     <EditText
@@ -57,9 +60,10 @@
         android:layout_height="wrap_content"
         android:inputType="textPassword"
         android:padding="10dp"
-        android:background="@drawable/edit_text_round"
+        android:background="@drawable/custom_input"
         android:layout_margin="2dp"
-        android:drawableLeft="@drawable/ic_baseline_lock_24"
+        android:drawableStart="@drawable/custom_lock_icon"
+        android:paddingStart="12dp"
         android:hint="@string/password"/>
 
     <EditText
@@ -68,9 +72,10 @@
         android:layout_height="wrap_content"
         android:inputType="textPassword"
         android:padding="10dp"
-        android:background="@drawable/edit_text_round"
+        android:background="@drawable/custom_input"
         android:layout_margin="2dp"
-        android:drawableLeft="@drawable/ic_baseline_lock_24"
+        android:drawableStart="@drawable/custom_lock_icon"
+        android:paddingStart="12dp"
         android:hint="Confirm Password"/>
 
     <Button
