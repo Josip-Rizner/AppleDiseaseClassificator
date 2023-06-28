@@ -82,7 +82,7 @@ public class LoginActivity extends AppCompatActivity {
                 email = etEmail.getText().toString().trim();
                 password = etPassword.getText().toString().trim();
 
-                if (!inputDataisCorrect(email, password)){
+                if (!inputDataIsCorrect(email, password)){
                     progressBar.setVisibility(View.GONE);
                     return;
                 }
@@ -117,13 +117,12 @@ public class LoginActivity extends AppCompatActivity {
                             // If sign in fails, display a message to the user.
                             Toast.makeText(LoginActivity.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
-
                         }
                     }
                 });
     }
 
-    private boolean inputDataisCorrect(String email, String password) {
+    private boolean inputDataIsCorrect(String email, String password) {
         if (TextUtils.isEmpty(email)) {
             etEmail.setError("Email is required");
             etEmail.requestFocus();
