@@ -69,13 +69,12 @@ public class SignupActivity extends AppCompatActivity {
                 firstName = etFirstName.getText().toString().trim();
                 lastName = etLastName.getText().toString().trim();
 
-                if (!inputDataisCorrect(firstName, lastName, email, password, confirmPassword)){
+                if (!inputDataIsCorrect(firstName, lastName, email, password, confirmPassword)){
                     progressBar.setVisibility(View.GONE);
                     return;
                 }
 
                 signupUser(firstName, lastName, email, password);
-
             }
         });
     }
@@ -100,7 +99,7 @@ public class SignupActivity extends AppCompatActivity {
                                 public void onComplete(@NonNull Task<Void> task) {
 
                                     if (task.isSuccessful()){
-                                        Toast.makeText(SignupActivity.this, "Account successfuly created", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(SignupActivity.this, "Account successfully created", Toast.LENGTH_SHORT).show();
 
                                         Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
                                         startActivity(intent);
@@ -109,10 +108,8 @@ public class SignupActivity extends AppCompatActivity {
                                     else{
                                         Toast.makeText(SignupActivity.this, "Registration failed, something went wrong", Toast.LENGTH_SHORT).show();
                                     }
-
                                 }
                             });
-
                         } else {
                             // If sign in fails, display a message to the user.
                             Toast.makeText(SignupActivity.this, "Authentication failed.",
@@ -123,7 +120,7 @@ public class SignupActivity extends AppCompatActivity {
     }
 
 
-    private boolean inputDataisCorrect(String firstName, String lastName,String email, String password, String confirmPassword) {
+    private boolean inputDataIsCorrect(String firstName, String lastName,String email, String password, String confirmPassword) {
         if (TextUtils.isEmpty(firstName)) {
             etFirstName.setError("Name is required");
             etFirstName.requestFocus();
