@@ -70,45 +70,64 @@
 
         </LinearLayout>
 
-
-        <TextView
-            android:id="@+id/tvCity"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textStyle="bold"
-            android:layout_marginTop="10dp"
-            android:textSize="30sp"
-            android:text="City" />
+            android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/tvTemperature"
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvCity"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textStyle="bold"
+                    android:layout_marginTop="10dp"
+                    android:textSize="30sp"
+                    android:text="City" />
+
+                <TextView
+                    android:id="@+id/tvTemperature"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textStyle="bold"
+                    android:layout_marginTop="10dp"
+                    android:textSize="30sp"
+                    android:text="Temperature" />
+
+                <TextView
+                    android:id="@+id/tvWeatherState"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textStyle="bold"
+                    android:layout_marginTop="10dp"
+                    android:textSize="30sp"
+                    android:text="Weather" />
+
+            </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/ivWeatherState"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/clear_sky"/>
+
+        </LinearLayout>
+
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvWeather"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textStyle="bold"
-            android:layout_marginTop="10dp"
-            android:textSize="30sp"
-            android:text="Temperature" />
-
-        <TextView
-            android:id="@+id/tvWeatherState"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textStyle="bold"
-            android:layout_marginTop="10dp"
-            android:textSize="30sp"
-            android:text="Weather" />
-
-        <ImageView
-            android:id="@+id/ivWeatherState"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:layout_gravity="center_horizontal"
-            android:background="@drawable/clear_sky"/>
-
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:layout_marginTop="15dp"/>
 
 
     </LinearLayout>
-
 
 </FrameLayout>

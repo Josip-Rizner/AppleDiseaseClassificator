@@ -12,6 +12,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -31,6 +33,7 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import cz.msebera.android.httpclient.Header;
@@ -38,7 +41,8 @@ import cz.msebera.android.httpclient.Header;
 public class SecondFragment extends Fragment {
 
     final String API_KEY = "8edb0515f032b02779527dc60e0023e4";
-    final String WEATHER_URL = "https://api.openweathermap.org/data/2.5/weather";
+    //final String WEATHER_URL = "https://api.openweathermap.org/data/2.5/weather"; //current
+    final String WEATHER_URL = "https://api.openweathermap.org/data/2.5/forecast"; //forecast
     final String CITY_LOCATION_URL = "https://api.openweathermap.org/geo/1.0/direct";
 
     final long MIN_TIME = 300000;
@@ -61,6 +65,9 @@ public class SecondFragment extends Fragment {
     LocationListener locationListener;
 
     LoadingDialog loadingDialog;
+
+    RecyclerView rvWeatherForecast;
+    WeatherAdapter weatherAdapter;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -116,6 +123,8 @@ public class SecondFragment extends Fragment {
         ibRefresh = view.findViewById(R.id.ibRefresh);
 
         loadingDialog = new LoadingDialog(getActivity());
+
+        rvWeatherForecast = view.findViewById(R.id.rvWeather);
 
         swUseCurrentLocation.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -284,11 +293,30 @@ public class SecondFragment extends Fragment {
     }
 
     private void updateUI(WeatherData weatherData){
-        tvTemperature.setText(weatherData.getTemperature());
+        tvTemperature.setText(weatherData.getCurrentTemperature());
         tvCity.setText(weatherData.getCity());
-        tvWeatherState.setText(weatherData.getWeatherType());
-        int resourceId = getResources().getIdentifier(weatherData.getIcon(), "drawable", getActivity().getPackageName());
+        tvWeatherState.setText(weatherData.getCurrentWeatherType());
+        int resourceId = getResources().getIdentifier(weatherData.getCurrentIcon(), "drawable", getActivity().getPackageName());
         ivWeatherState.setImageResource(resourceId);
+
+        JSONObject[] weatherForecast = weatherData.getWeatherForecastAsJSONObjectList();
+        
+        //Update weather state id to image resource id
+        for(int i = 0; i < weatherForecast.length; i++){
+            try {
+                int weatherStateId = weatherForecast[i].getJSONArray("weather").getJSONObject(0).getInt("id");
+                int imageId = getResources().getIdentifier(WeatherData.updateWeatherIcon(weatherStateId), "drawable", getActivity().getPackageName());
+                weatherForecast[i].getJSONArray("weather").getJSONObject(0).put("id", imageId);
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+        weatherAdapter = new WeatherAdapter((weatherForecast));
+        rvWeatherForecast.setHasFixedSize(true);
+        rvWeatherForecast.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+        rvWeatherForecast.setAdapter(weatherAdapter);
     }
 
     @Override
