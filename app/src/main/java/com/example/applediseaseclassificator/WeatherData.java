@@ -1,5 +1,6 @@
 package com.example.applediseaseclassificator;
 
+import android.content.Intent;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -20,7 +21,7 @@ public class WeatherData {
             int condition = weatherData.weatherForecast.getJSONObject(0).getJSONArray("weather").getJSONObject(0).getInt("id");
             weatherData.currentWeatherType = weatherData.weatherForecast.getJSONObject(0).getJSONArray("weather").getJSONObject(0).getString("main");
             weatherData.currentIcon = updateWeatherIcon(condition);
-            weatherData.currentTemperature = Double.toString(weatherData.weatherForecast.getJSONObject(0).getJSONObject("main").getDouble("temp"));
+            weatherData.currentTemperature = Integer.toString((int) weatherData.weatherForecast.getJSONObject(0).getJSONObject("main").getDouble("temp"));
             return weatherData;
         }
         catch (JSONException e){
@@ -58,7 +59,7 @@ public class WeatherData {
         else if(condition == 801){
             return "few_clouds";
         }
-        else if(condition == 803 || condition == 804){
+        else if(condition >= 802 && condition <= 804){
             return "scattered_clouds";
         }
 

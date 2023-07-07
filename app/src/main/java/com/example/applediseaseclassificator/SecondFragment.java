@@ -45,8 +45,8 @@ public class SecondFragment extends Fragment {
     final String WEATHER_URL = "https://api.openweathermap.org/data/2.5/forecast"; //forecast
     final String CITY_LOCATION_URL = "https://api.openweathermap.org/geo/1.0/direct";
 
-    final long MIN_TIME = 300000;
-    final float MIN_DISTANCE = 1000;
+    final long MIN_TIME = 400;
+    final float MIN_DISTANCE = 10000;
     final int REQUEST_CODE = 101;
 
     String location_provider = LocationManager.GPS_PROVIDER;
@@ -297,6 +297,7 @@ public class SecondFragment extends Fragment {
         tvCity.setText(weatherData.getCity());
         tvWeatherState.setText(weatherData.getCurrentWeatherType());
         int resourceId = getResources().getIdentifier(weatherData.getCurrentIcon(), "drawable", getActivity().getPackageName());
+        ivWeatherState.setImageResource(android.R.color.transparent);
         ivWeatherState.setImageResource(resourceId);
 
         JSONObject[] weatherForecast = weatherData.getWeatherForecastAsJSONObjectList();

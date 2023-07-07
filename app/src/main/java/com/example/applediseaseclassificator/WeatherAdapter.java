@@ -24,7 +24,7 @@ public class WeatherAdapter extends RecyclerView.Adapter<WeatherAdapter.WeatherV
     public static class WeatherViewHolder extends RecyclerView.ViewHolder{
 
         public ImageView ivWeatherState;
-        public TextView tvTemperature, tvWeatherState;
+        public TextView tvTemperature, tvWeatherState, tvDate;
 
 
         public WeatherViewHolder(@NonNull View itemView) {
@@ -33,6 +33,7 @@ public class WeatherAdapter extends RecyclerView.Adapter<WeatherAdapter.WeatherV
             this.ivWeatherState = itemView.findViewById(R.id.ivWeatherState);
             this.tvWeatherState = itemView.findViewById(R.id.tvWeatherState);
             this.tvTemperature = itemView.findViewById(R.id.tvTemperature);
+            this.tvDate = itemView.findViewById(R.id.tvDate);
 
         }
     }
@@ -53,8 +54,10 @@ public class WeatherAdapter extends RecyclerView.Adapter<WeatherAdapter.WeatherV
     public void onBindViewHolder(@NonNull WeatherViewHolder holder, int position) {
         final JSONObject weatherForecast = weatherForecastData[position];
         try {
-            holder.tvTemperature.setText(Double.toString(weatherForecast.getJSONObject("main").getDouble("temp")) + "°C");
+            holder.tvTemperature.setText(Integer.toString((int) weatherForecast.getJSONObject("main").getDouble("temp")) + "°C");
             holder.tvWeatherState.setText(weatherForecast.getJSONArray("weather").getJSONObject(0).getString("main"));
+            holder.tvDate.setText(weatherForecast.getString("dt_txt"));
+            holder.ivWeatherState.setImageResource(android.R.color.transparent);
             holder.ivWeatherState.setImageResource(weatherForecast.getJSONArray("weather").getJSONObject(0).getInt("id"));
         } catch (JSONException e) {
             e.printStackTrace();
