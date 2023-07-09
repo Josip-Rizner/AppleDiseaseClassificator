@@ -58,7 +58,7 @@ public class WeatherAdapter extends RecyclerView.Adapter<WeatherAdapter.WeatherV
             holder.tvWeatherState.setText(weatherForecast.getJSONArray("weather").getJSONObject(0).getString("main"));
             holder.tvDate.setText(weatherForecast.getString("dt_txt"));
             holder.ivWeatherState.setImageResource(android.R.color.transparent);
-            holder.ivWeatherState.setImageResource(weatherForecast.getJSONArray("weather").getJSONObject(0).getInt("id"));
+            holder.ivWeatherState.setImageResource(weatherForecast.getJSONArray("weather").getJSONObject(0).getInt("image_id"));
         } catch (JSONException e) {
             e.printStackTrace();
         }

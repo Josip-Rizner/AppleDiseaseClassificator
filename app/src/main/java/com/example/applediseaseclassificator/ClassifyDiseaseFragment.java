@@ -8,7 +8,6 @@ import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -21,7 +20,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.applediseaseclassificator.ml.Model;
 
@@ -33,51 +31,50 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 
-public class FirstFragment extends Fragment {
+public class ClassifyDiseaseFragment extends Fragment {
 
     Button btnOpenCamera, btnOpenGallery;
     ImageView ivImage;
     TextView tvClass;
     int imageSize = 128;
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private Bitmap setImage = null;
+    private String setClass = null;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
 
-    public FirstFragment() {
+    public ClassifyDiseaseFragment() {
         // Required empty public constructor
     }
 
-
-    // TODO: Rename and change types and number of parameters
-    public static FirstFragment newInstance(String param1, String param2) {
-        FirstFragment fragment = new FirstFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
+    public static ClassifyDiseaseFragment newInstance() {
+        ClassifyDiseaseFragment fragment = new ClassifyDiseaseFragment();
         return fragment;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+
+    }
+
+    @Override
+    public void onResume() {
+        if(setImage != null){
+            ivImage.setImageBitmap(setImage);
         }
+
+        if(setClass != null){
+            tvClass.setText(setClass);
+        }
+
+        super.onResume();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view =  inflater.inflate(R.layout.fragment_first, container, false);
+        View view =  inflater.inflate(R.layout.fragment_classify_disease, container, false);
 
         btnOpenCamera = view.findViewById(R.id.btnTakePicture);
         btnOpenGallery = view.findViewById(R.id.btnOpenGallery);
@@ -109,7 +106,7 @@ public class FirstFragment extends Fragment {
         return view;
     }
 
-    public void classifyImage(Bitmap image){
+    public void classifyDisease(Bitmap image){
         try {
             Model model = Model.newInstance(getContext());
 
@@ -149,6 +146,7 @@ public class FirstFragment extends Fragment {
 
             String[] classes = {"complex", "frog_eye_leaf_spot", "frog_eye_leaf_spot complex", "healthy", "powdery_mildew", "powdery_mildew complex", "rust", "rust complex", "rust frog_eye_leaf_spot", "scab", "scab frog_eye_leaf_spot", "scab frog_eye_leaf_spot complex"};
             tvClass.setText(classes[maxPos]);
+            setClass = classes[maxPos];
 
             // Releases model resources if no longer used.
             model.close();
@@ -172,9 +170,10 @@ public class FirstFragment extends Fragment {
             int dimension = Math.min(image.getWidth(), image.getHeight());
             image = ThumbnailUtils.extractThumbnail(image, dimension, dimension);
             ivImage.setImageBitmap(image);
+            setImage = image;
 
             image = Bitmap.createScaledBitmap(image, imageSize, imageSize, false);
-            classifyImage(image);
+            classifyDisease(image);
         }
         else{
             Uri dat = null;
@@ -192,9 +191,10 @@ public class FirstFragment extends Fragment {
                 e.printStackTrace();
             }
             ivImage.setImageBitmap(image);
+            setImage = image;
 
             image = Bitmap.createScaledBitmap(image, imageSize, imageSize, false);
-            classifyImage(image);
+            classifyDisease(image);
         }
         super.onActivityResult(requestCode, resultCode, data);
 

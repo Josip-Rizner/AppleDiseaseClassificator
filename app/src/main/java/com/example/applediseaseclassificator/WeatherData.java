@@ -85,7 +85,6 @@ public class WeatherData {
         return forecast;
     }
 
-
     public JSONArray getWeatherForecast() {
         return weatherForecast;
     }

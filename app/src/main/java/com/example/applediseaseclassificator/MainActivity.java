@@ -24,8 +24,8 @@ public class MainActivity extends AppCompatActivity implements NavigationBarView
 
     BottomNavigationView bottomNavigationView;
 
-    FirstFragment firstFragment = new FirstFragment();
-    SecondFragment secondFragment = new SecondFragment();
+    ClassifyDiseaseFragment classifyDiseaseFragment = new ClassifyDiseaseFragment();
+    WeatherForecastFragment weatherForecastFragment = new WeatherForecastFragment();
     ThirdFragment thirdFragment = new ThirdFragment();
 
     @Override
@@ -70,11 +70,11 @@ public class MainActivity extends AppCompatActivity implements NavigationBarView
 
         switch (item.getItemId()){
             case R.id.tab1:
-                getSupportFragmentManager().beginTransaction().replace(R.id.flFragmentCountainer, firstFragment).commit();
+                getSupportFragmentManager().beginTransaction().replace(R.id.flFragmentCountainer, classifyDiseaseFragment).commit();
                 return true;
 
             case R.id.tab2:
-                getSupportFragmentManager().beginTransaction().replace(R.id.flFragmentCountainer, secondFragment).commit();
+                getSupportFragmentManager().beginTransaction().replace(R.id.flFragmentCountainer, weatherForecastFragment).commit();
                 return true;
 
             case R.id.tab3:

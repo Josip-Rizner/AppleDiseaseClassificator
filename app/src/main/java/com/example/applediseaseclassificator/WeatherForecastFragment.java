@@ -38,7 +38,7 @@ import org.json.JSONObject;
 
 import cz.msebera.android.httpclient.Header;
 
-public class SecondFragment extends Fragment {
+public class WeatherForecastFragment extends Fragment {
 
     final String API_KEY = "8edb0515f032b02779527dc60e0023e4";
     //final String WEATHER_URL = "https://api.openweathermap.org/data/2.5/weather"; //current
@@ -60,6 +60,8 @@ public class SecondFragment extends Fragment {
     LinearLayout llSetLocation;
     ImageButton ibRefresh;
 
+    private WeatherData currentlySetWeatherData = null;
+    private boolean locationSwitchSwitched = true;
 
     LocationManager locationManager;
     LocationListener locationListener;
@@ -78,13 +80,13 @@ public class SecondFragment extends Fragment {
     private String mParam1;
     private String mParam2;
 
-    public SecondFragment() {
+    public WeatherForecastFragment() {
         // Required empty public constructor
     }
 
 
-    public static SecondFragment newInstance(String param1, String param2) {
-        SecondFragment fragment = new SecondFragment();
+    public static WeatherForecastFragment newInstance(String param1, String param2) {
+        WeatherForecastFragment fragment = new WeatherForecastFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -103,6 +105,11 @@ public class SecondFragment extends Fragment {
 
     @Override
     public void onResume() {
+        swUseCurrentLocation.setChecked(locationSwitchSwitched);
+        if(currentlySetWeatherData != null){
+            updateUI(currentlySetWeatherData);
+        }
+
         super.onResume();
     }
 
@@ -110,7 +117,7 @@ public class SecondFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_second, container, false);
+        View view = inflater.inflate(R.layout.fragment_weather_forecast, container, false);
 
         tvWeatherState = view.findViewById(R.id.tvWeatherState);
         tvTemperature = view.findViewById(R.id.tvTemperature);
@@ -133,9 +140,11 @@ public class SecondFragment extends Fragment {
                     llSetLocation.setVisibility(View.GONE);
                     Toast.makeText(getActivity(), "Fetching data for current location", Toast.LENGTH_SHORT).show();
                     getWeatherForCurrentLocation();
+                    locationSwitchSwitched = true;
                 }
                 else{
                     llSetLocation.setVisibility(View.VISIBLE);
+                    locationSwitchSwitched = false;
                 }
 
             }
@@ -159,8 +168,9 @@ public class SecondFragment extends Fragment {
                 getWeatherForCurrentLocation();
             }
         });
-
-        getWeatherForCurrentLocation();
+        if(currentlySetWeatherData == null){
+            getWeatherForCurrentLocation();
+        }
 
         return view;
     }
@@ -214,7 +224,7 @@ public class SecondFragment extends Fragment {
             }
         }
         else{
-            Toast.makeText(getActivity(), "Da Fuuuuck", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), "Can't fetch Weather forecast for current location without permission to use location.", Toast.LENGTH_SHORT).show();
             //User denied permission
         }
     }
@@ -234,6 +244,7 @@ public class SecondFragment extends Fragment {
                 super.onSuccess(statusCode, headers, response);
                 Toast.makeText(getActivity(), "Data fetched successfully ", Toast.LENGTH_SHORT).show();
                 WeatherData weatherData = WeatherData.fromJson(response);
+                currentlySetWeatherData = weatherData;
                 updateUI(weatherData);
             }
             @Override
@@ -301,18 +312,19 @@ public class SecondFragment extends Fragment {
         ivWeatherState.setImageResource(resourceId);
 
         JSONObject[] weatherForecast = weatherData.getWeatherForecastAsJSONObjectList();
-        
-        //Update weather state id to image resource id
+
+        //Add image resource id according to weather state id
         for(int i = 0; i < weatherForecast.length; i++){
             try {
                 int weatherStateId = weatherForecast[i].getJSONArray("weather").getJSONObject(0).getInt("id");
                 int imageId = getResources().getIdentifier(WeatherData.updateWeatherIcon(weatherStateId), "drawable", getActivity().getPackageName());
-                weatherForecast[i].getJSONArray("weather").getJSONObject(0).put("id", imageId);
+                weatherForecast[i].getJSONArray("weather").getJSONObject(0).put("image_id", imageId);
 
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
+
 
         weatherAdapter = new WeatherAdapter((weatherForecast));
         rvWeatherForecast.setHasFixedSize(true);
