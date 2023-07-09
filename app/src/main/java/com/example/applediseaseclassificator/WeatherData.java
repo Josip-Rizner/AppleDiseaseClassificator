@@ -1,23 +1,27 @@
 package com.example.applediseaseclassificator;
 
 import android.content.Intent;
+import android.util.Log;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class WeatherData {
 
-    private String temperature, icon, city, weatherType;
-    private int condition;
+    private String currentTemperature, currentIcon, city, currentWeatherType;
+    private static JSONArray weatherForecast;
 
     public static WeatherData fromJson(JSONObject jsonObject){
         try {
             WeatherData weatherData = new WeatherData();
-            weatherData.city = jsonObject.getString("name");
-            weatherData.condition = jsonObject.getJSONArray("weather").getJSONObject(0).getInt("id");
-            weatherData.weatherType = jsonObject.getJSONArray("weather").getJSONObject(0).getString("main");
-            weatherData.icon = updateWeatherIcon(weatherData.condition);
-            weatherData.temperature = Double.toString(jsonObject.getJSONObject("main").getDouble("temp"));
+            weatherData.weatherForecast = jsonObject.getJSONArray("list");
+            weatherForecast = weatherData.weatherForecast;
+            weatherData.city =  jsonObject.getJSONObject("city").getString("name");
+            int condition = weatherData.weatherForecast.getJSONObject(0).getJSONArray("weather").getJSONObject(0).getInt("id");
+            weatherData.currentWeatherType = weatherData.weatherForecast.getJSONObject(0).getJSONArray("weather").getJSONObject(0).getString("main");
+            weatherData.currentIcon = updateWeatherIcon(condition);
+            weatherData.currentTemperature = Integer.toString((int) weatherData.weatherForecast.getJSONObject(0).getJSONObject("main").getDouble("temp"));
             return weatherData;
         }
         catch (JSONException e){
@@ -26,7 +30,7 @@ public class WeatherData {
         }
     }
 
-    private static String updateWeatherIcon(int condition){
+    public static String updateWeatherIcon(int condition){
         //values are taken from Weather Condition Page/API documentation
         if(condition >= 200 && condition <= 232){
             return "thunderstorm";
@@ -55,26 +59,49 @@ public class WeatherData {
         else if(condition == 801){
             return "few_clouds";
         }
-        else if(condition == 803 || condition == 804){
+        else if(condition >= 802 && condition <= 804){
             return "scattered_clouds";
         }
 
         return "not_supported";
     }
 
-    public String getTemperature() {
-        return temperature + "°C";
+    public int getWeatherForecastLength(){
+        return weatherForecast.length();
     }
 
-    public String getIcon() {
-        return icon;
+    public JSONObject[] getWeatherForecastAsJSONObjectList(){
+        int listLength = getWeatherForecastLength();
+        JSONObject[] forecast = new JSONObject[listLength];
+
+        for(int i = 0; i < listLength; i++){
+            try {
+                forecast[i] = weatherForecast.getJSONObject(i);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return forecast;
+    }
+
+    public JSONArray getWeatherForecast() {
+        return weatherForecast;
+    }
+
+    public String getCurrentTemperature() {
+        return currentTemperature + "°C";
+    }
+
+    public String getCurrentIcon() {
+        return currentIcon;
     }
 
     public String getCity() {
         return city;
     }
 
-    public String getWeatherType() {
-        return weatherType;
+    public String getCurrentWeatherType() {
+        return currentWeatherType;
     }
 }

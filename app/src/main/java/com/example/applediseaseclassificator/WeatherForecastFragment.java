@@ -12,6 +12,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -31,18 +33,20 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import cz.msebera.android.httpclient.Header;
 
-public class SecondFragment extends Fragment {
+public class WeatherForecastFragment extends Fragment {
 
     final String API_KEY = "8edb0515f032b02779527dc60e0023e4";
-    final String WEATHER_URL = "https://api.openweathermap.org/data/2.5/weather";
+    //final String WEATHER_URL = "https://api.openweathermap.org/data/2.5/weather"; //current
+    final String WEATHER_URL = "https://api.openweathermap.org/data/2.5/forecast"; //forecast
     final String CITY_LOCATION_URL = "https://api.openweathermap.org/geo/1.0/direct";
 
-    final long MIN_TIME = 300000;
-    final float MIN_DISTANCE = 1000;
+    final long MIN_TIME = 400;
+    final float MIN_DISTANCE = 10000;
     final int REQUEST_CODE = 101;
 
     String location_provider = LocationManager.GPS_PROVIDER;
@@ -56,11 +60,16 @@ public class SecondFragment extends Fragment {
     LinearLayout llSetLocation;
     ImageButton ibRefresh;
 
+    private WeatherData currentlySetWeatherData = null;
+    private boolean locationSwitchSwitched = true;
 
     LocationManager locationManager;
     LocationListener locationListener;
 
     LoadingDialog loadingDialog;
+
+    RecyclerView rvWeatherForecast;
+    WeatherAdapter weatherAdapter;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -71,13 +80,13 @@ public class SecondFragment extends Fragment {
     private String mParam1;
     private String mParam2;
 
-    public SecondFragment() {
+    public WeatherForecastFragment() {
         // Required empty public constructor
     }
 
 
-    public static SecondFragment newInstance(String param1, String param2) {
-        SecondFragment fragment = new SecondFragment();
+    public static WeatherForecastFragment newInstance(String param1, String param2) {
+        WeatherForecastFragment fragment = new WeatherForecastFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -96,6 +105,11 @@ public class SecondFragment extends Fragment {
 
     @Override
     public void onResume() {
+        swUseCurrentLocation.setChecked(locationSwitchSwitched);
+        if(currentlySetWeatherData != null){
+            updateUI(currentlySetWeatherData);
+        }
+
         super.onResume();
     }
 
@@ -103,7 +117,7 @@ public class SecondFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_second, container, false);
+        View view = inflater.inflate(R.layout.fragment_weather_forecast, container, false);
 
         tvWeatherState = view.findViewById(R.id.tvWeatherState);
         tvTemperature = view.findViewById(R.id.tvTemperature);
@@ -117,6 +131,8 @@ public class SecondFragment extends Fragment {
 
         loadingDialog = new LoadingDialog(getActivity());
 
+        rvWeatherForecast = view.findViewById(R.id.rvWeather);
+
         swUseCurrentLocation.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
@@ -124,9 +140,11 @@ public class SecondFragment extends Fragment {
                     llSetLocation.setVisibility(View.GONE);
                     Toast.makeText(getActivity(), "Fetching data for current location", Toast.LENGTH_SHORT).show();
                     getWeatherForCurrentLocation();
+                    locationSwitchSwitched = true;
                 }
                 else{
                     llSetLocation.setVisibility(View.VISIBLE);
+                    locationSwitchSwitched = false;
                 }
 
             }
@@ -150,8 +168,9 @@ public class SecondFragment extends Fragment {
                 getWeatherForCurrentLocation();
             }
         });
-
-        getWeatherForCurrentLocation();
+        if(currentlySetWeatherData == null){
+            getWeatherForCurrentLocation();
+        }
 
         return view;
     }
@@ -205,7 +224,7 @@ public class SecondFragment extends Fragment {
             }
         }
         else{
-            Toast.makeText(getActivity(), "Da Fuuuuck", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), "Can't fetch Weather forecast for current location without permission to use location.", Toast.LENGTH_SHORT).show();
             //User denied permission
         }
     }
@@ -225,6 +244,7 @@ public class SecondFragment extends Fragment {
                 super.onSuccess(statusCode, headers, response);
                 Toast.makeText(getActivity(), "Data fetched successfully ", Toast.LENGTH_SHORT).show();
                 WeatherData weatherData = WeatherData.fromJson(response);
+                currentlySetWeatherData = weatherData;
                 updateUI(weatherData);
             }
             @Override
@@ -284,11 +304,32 @@ public class SecondFragment extends Fragment {
     }
 
     private void updateUI(WeatherData weatherData){
-        tvTemperature.setText(weatherData.getTemperature());
+        tvTemperature.setText(weatherData.getCurrentTemperature());
         tvCity.setText(weatherData.getCity());
-        tvWeatherState.setText(weatherData.getWeatherType());
-        int resourceId = getResources().getIdentifier(weatherData.getIcon(), "drawable", getActivity().getPackageName());
+        tvWeatherState.setText(weatherData.getCurrentWeatherType());
+        int resourceId = getResources().getIdentifier(weatherData.getCurrentIcon(), "drawable", getActivity().getPackageName());
+        ivWeatherState.setImageResource(android.R.color.transparent);
         ivWeatherState.setImageResource(resourceId);
+
+        JSONObject[] weatherForecast = weatherData.getWeatherForecastAsJSONObjectList();
+
+        //Add image resource id according to weather state id
+        for(int i = 0; i < weatherForecast.length; i++){
+            try {
+                int weatherStateId = weatherForecast[i].getJSONArray("weather").getJSONObject(0).getInt("id");
+                int imageId = getResources().getIdentifier(WeatherData.updateWeatherIcon(weatherStateId), "drawable", getActivity().getPackageName());
+                weatherForecast[i].getJSONArray("weather").getJSONObject(0).put("image_id", imageId);
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+
+        weatherAdapter = new WeatherAdapter((weatherForecast));
+        rvWeatherForecast.setHasFixedSize(true);
+        rvWeatherForecast.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+        rvWeatherForecast.setAdapter(weatherAdapter);
     }
 
     @Override
