@@ -38,10 +38,16 @@ public class MainActivity extends AppCompatActivity implements NavigationBarView
         btnLogout = findViewById(R.id.btnLogout);
         tvUser = findViewById(R.id.test);
 
+        Bundle bundle = getIntent().getExtras();
+        int tab = bundle.getInt("tab");
         bottomNavigationView = findViewById(R.id.bnvBottomNavigation);
         bottomNavigationView.setOnItemSelectedListener(this);
-        bottomNavigationView.setSelectedItemId(R.id.tab1);
-
+        if(tab == 3){
+            bottomNavigationView.setSelectedItemId(R.id.tab3);
+        }
+        else{
+            bottomNavigationView.setSelectedItemId(R.id.tab1);
+        }
 
         if (user == null){
             Intent intent = new Intent(getApplicationContext(), LoginActivity.class);

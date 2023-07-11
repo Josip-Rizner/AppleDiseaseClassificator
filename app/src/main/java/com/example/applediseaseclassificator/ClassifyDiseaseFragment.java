@@ -33,7 +33,7 @@ import java.nio.ByteOrder;
 
 public class ClassifyDiseaseFragment extends Fragment {
 
-    Button btnOpenCamera, btnOpenGallery;
+    Button btnOpenCamera, btnOpenGallery, btnStartRecommendationSystem;
     ImageView ivImage;
     TextView tvClass;
     int imageSize = 128;
@@ -61,6 +61,10 @@ public class ClassifyDiseaseFragment extends Fragment {
     public void onResume() {
         if(setImage != null){
             ivImage.setImageBitmap(setImage);
+            btnStartRecommendationSystem.setVisibility(View.VISIBLE);
+        }
+        else {
+            btnStartRecommendationSystem.setVisibility(View.GONE);
         }
 
         if(setClass != null){
@@ -80,6 +84,7 @@ public class ClassifyDiseaseFragment extends Fragment {
         btnOpenGallery = view.findViewById(R.id.btnOpenGallery);
         tvClass = view.findViewById(R.id.tvClass);
         ivImage = view.findViewById(R.id.ivImage);
+        btnStartRecommendationSystem = view.findViewById(R.id.btnCreateRecommendationSystem);
 
         btnOpenCamera.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -99,6 +104,14 @@ public class ClassifyDiseaseFragment extends Fragment {
             public void onClick(View view) {
                 Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                 startActivityForResult(intent,1);
+            }
+        });
+
+        btnStartRecommendationSystem.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                StartRecommendationsDialog startRecommendationsDialog = new StartRecommendationsDialog(setImage);
+                startRecommendationsDialog.show(getActivity().getSupportFragmentManager(), "start recommendation dialog");
             }
         });
 
@@ -169,8 +182,7 @@ public class ClassifyDiseaseFragment extends Fragment {
             //Beacuse neural network was trained on square images
             int dimension = Math.min(image.getWidth(), image.getHeight());
             image = ThumbnailUtils.extractThumbnail(image, dimension, dimension);
-            ivImage.setImageBitmap(image);
-            setImage = image;
+            setImage(image);
 
             image = Bitmap.createScaledBitmap(image, imageSize, imageSize, false);
             classifyDisease(image);
@@ -190,13 +202,19 @@ public class ClassifyDiseaseFragment extends Fragment {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            ivImage.setImageBitmap(image);
-            setImage = image;
+            setImage(image);
 
             image = Bitmap.createScaledBitmap(image, imageSize, imageSize, false);
             classifyDisease(image);
         }
         super.onActivityResult(requestCode, resultCode, data);
 
+    }
+
+    private void setImage(Bitmap image){
+        ivImage.setImageBitmap(image);
+        setImage = image;
+
+        btnStartRecommendationSystem.setVisibility(View.VISIBLE);
     }
 }
