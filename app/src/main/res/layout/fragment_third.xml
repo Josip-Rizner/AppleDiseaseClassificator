@@ -3,13 +3,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/teal_200"
+    android:padding="20dp"
     tools:context=".ThirdFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvSystemRecommendations"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="Third fragment" />
+        android:layout_height="match_parent"/>
 
 </FrameLayout>

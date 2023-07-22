@@ -5,14 +5,22 @@ import org.json.JSONException;
 
 public class RecommendationSystem {
 
-    private String id, latitude, longitude, name;
+    private String id, latitude, longitude, name, startingImageReference;
+    private long timestamp;
 
+    public RecommendationSystem (){}
 
-    public RecommendationSystem (String id, String latitude, String longitude, String name){
+    public RecommendationSystem (String id, String latitude, String longitude, String name, String imageReference){
         this.id = id;
         this.latitude = latitude;
         this.longitude = longitude;
         this.name = name;
+        this.startingImageReference = imageReference;
+        this.timestamp = System.currentTimeMillis();
+    }
+
+    public String getId() {
+        return id;
     }
 
     public String getLatitude() {
@@ -25,5 +33,13 @@ public class RecommendationSystem {
 
     public String getName() {
         return name;
+    }
+
+    public String getStartingImageReference() {
+        return startingImageReference;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
     }
 }

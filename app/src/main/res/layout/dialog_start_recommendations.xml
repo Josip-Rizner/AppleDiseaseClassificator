@@ -51,6 +51,11 @@
 
     </LinearLayout>
 
+    <ImageView
+        android:id="@+id/ivStartingImageDialog"
+        android:layout_width="100dp"
+        android:layout_height="100dp"/>
+
     <Button
         android:id="@+id/btnCreateRecommendationSystem"
         android:layout_width="wrap_content"

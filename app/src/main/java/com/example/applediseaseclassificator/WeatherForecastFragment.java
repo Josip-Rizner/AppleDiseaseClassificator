@@ -169,7 +169,14 @@ public class WeatherForecastFragment extends Fragment {
                 @SuppressLint("MissingPermission") Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                 if(currentlySetWeatherData != null){
                     if (swUseCurrentLocation.isChecked()){
-                        createWeatherRequest(Double.toString(location.getLatitude()), Double.toString(location.getLongitude()));
+                        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
+                            return;
+                        }
+
+                        LocationManager locationManagerRefresh = (LocationManager) getActivity().getSystemService(getContext().LOCATION_SERVICE);
+                        Location locationRefresh = locationManagerRefresh.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                        createWeatherRequest(Double.toString(locationRefresh.getLatitude()), Double.toString(locationRefresh.getLongitude()));
                     }
                     else{
                         createCityLocationRequest(tvCity.getText().toString());

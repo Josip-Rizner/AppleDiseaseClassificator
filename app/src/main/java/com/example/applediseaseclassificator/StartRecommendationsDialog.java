@@ -3,7 +3,7 @@ package com.example.applediseaseclassificator;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.DialogInterface;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -15,9 +15,11 @@ import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -28,6 +30,8 @@ import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.app.ActivityCompat;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -35,12 +39,12 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
 import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 
@@ -56,12 +60,16 @@ public class StartRecommendationsDialog extends AppCompatDialogFragment {
     private EditText etSystemRecommendationName, etLocation;
     private SwitchCompat swUseCurrentLocation;
     private Button btnCreateRecommendationSystem, btnClose;
+    private ImageView ivStartingImage;
 
     private LinearLayout llSetLocation;
 
     private Bitmap image;
     private String latitude = null;
     private String longitude = null;
+
+    private FirebaseAuth mAuth;
+    private FirebaseUser user;
 
     public StartRecommendationsDialog(Bitmap image){
         this.image = image;
@@ -82,9 +90,13 @@ public class StartRecommendationsDialog extends AppCompatDialogFragment {
         swUseCurrentLocation = view.findViewById(R.id.swUseLocation);
         btnClose = view.findViewById(R.id.btnClose);
         btnCreateRecommendationSystem = view.findViewById(R.id.btnCreateRecommendationSystem);
-
+        ivStartingImage = view.findViewById(R.id.ivStartingImageDialog);
+        ivStartingImage.setImageBitmap(image);
 
         llSetLocation = view.findViewById(R.id.llOtherLocation);
+        mAuth = FirebaseAuth.getInstance();
+        user = mAuth.getCurrentUser();
+
 
         btnCreateRecommendationSystem.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -151,13 +163,8 @@ public class StartRecommendationsDialog extends AppCompatDialogFragment {
             return;
         }
         else{
-            String name = etSystemRecommendationName.getText().toString().trim();
-            saveData(latitude, longitude, name);
+            saveData();
         }
-
-        Intent intent = new Intent(getContext(), RecommendationsActivity.class);
-        intent.putExtra("recommendation_system_id", "key");
-        startActivity(intent);
     }
 
     private void createCityLocationRequest(String cityName){
@@ -174,16 +181,47 @@ public class StartRecommendationsDialog extends AppCompatDialogFragment {
         this.longitude = Double.toString(longitude);
     }
 
-    private void saveData(String latitude, String longitude, String name){
-        FirebaseAuth mAuth = FirebaseAuth.getInstance();
-        FirebaseUser user = mAuth.getCurrentUser();
-        StorageReference storageReference = FirebaseStorage.getInstance().getReference("images");
-
+    private void saveData(){
         Uri uriImage = getImageUri(image, Bitmap.CompressFormat.JPEG, 1);
+        StorageReference storageReference = FirebaseStorage.getInstance().getReference("images").child(user.getUid());
 
+        if(uriImage != null){
+            StorageReference fileReference = storageReference.child(System.currentTimeMillis() + "." + getFileExtension(uriImage));
+            fileReference.putFile(uriImage).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    Toast.makeText(getActivity(), "Image upload successful", Toast.LENGTH_SHORT).show();
+                    String name = etSystemRecommendationName.getText().toString().trim();
+
+                    fileReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+
+                            saveRecommendationSystemInfo(latitude, longitude, name, uri.toString());
+
+                        }
+                    });
+
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+
+        }
+        else {
+            Toast.makeText(getActivity(), "Couldn't get the image.", Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
+    private void saveRecommendationSystemInfo(String latitude, String longitude, String name, String image_reference){
         DatabaseReference dbReference = FirebaseDatabase.getInstance().getReference("RecommendationSystems");
+
         String recommendationSystemId = dbReference.push().getKey();
-        RecommendationSystem recommendationSystem = new RecommendationSystem(recommendationSystemId ,latitude, longitude, name);
+        RecommendationSystem recommendationSystem = new RecommendationSystem(recommendationSystemId ,latitude, longitude, name, image_reference);
 
         dbReference.child(user.getUid()).child(recommendationSystemId).setValue(recommendationSystem).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
@@ -191,6 +229,7 @@ public class StartRecommendationsDialog extends AppCompatDialogFragment {
 
                 if (task.isSuccessful()){
                     Toast.makeText(getActivity(), "Data saved successfully.", Toast.LENGTH_SHORT).show();
+                    openCreatedRecommendationSystem(recommendationSystemId);
                 }
                 else{
                     Toast.makeText(getActivity(), "Couldn't save data, please try later.", Toast.LENGTH_SHORT).show();
@@ -205,6 +244,18 @@ public class StartRecommendationsDialog extends AppCompatDialogFragment {
         source.compress(format, quality, os);
         String path = MediaStore.Images.Media.insertImage(getActivity().getContentResolver(), source, "title", null);
         return Uri.parse(path);
+    }
+
+    private String getFileExtension(Uri uri){
+        ContentResolver cR = getActivity().getContentResolver();
+        MimeTypeMap mime = MimeTypeMap.getSingleton();
+        return  mime.getExtensionFromMimeType(cR.getType(uri));
+    }
+
+    private void openCreatedRecommendationSystem(String recommendationSystemId){
+        Intent intent = new Intent(getContext(), RecommendationsActivity.class);
+        intent.putExtra("recommendation_system_id", recommendationSystemId);
+        startActivity(intent);
     }
 
     @Override
