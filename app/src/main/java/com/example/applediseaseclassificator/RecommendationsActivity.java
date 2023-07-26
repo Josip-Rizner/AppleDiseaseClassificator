@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,8 +27,8 @@ import com.squareup.picasso.Picasso;
 
 public class RecommendationsActivity extends AppCompatActivity {
 
-    private TextView tvTest, tvName;
-    private Button btnBack;
+    private TextView tvName, tvLatLong, tvDisease;
+    private ImageButton btnBack;
     private ImageView ivStartingImage;
 
     DatabaseReference databaseReference;
@@ -42,11 +43,11 @@ public class RecommendationsActivity extends AppCompatActivity {
         Bundle bundle = getIntent().getExtras();
         String recommendationSystemId = bundle.getString("recommendation_system_id");
 
-        tvTest = findViewById(R.id.tvTest);
         tvName = findViewById(R.id.tvName);
+        tvLatLong = findViewById(R.id.tvLatLong);
+        tvDisease = findViewById(R.id.tvClass);
         btnBack = findViewById(R.id.btnBack);
         ivStartingImage = findViewById(R.id.ivStartingImage);
-        tvTest.setText(recommendationSystemId);
 
         firebaseAuth = FirebaseAuth.getInstance();
         user = firebaseAuth.getCurrentUser();
@@ -59,6 +60,9 @@ public class RecommendationsActivity extends AppCompatActivity {
                 RecommendationSystem recommendationSystem = snapshot.getValue(RecommendationSystem.class);
 
                 tvName.setText(recommendationSystem.getName());
+                tvLatLong.setText(recommendationSystem.getLatitude() + " / " + recommendationSystem.getLongitude());
+                tvDisease.setText("TODO");
+
                 Picasso.with(getApplicationContext())
                         .load(recommendationSystem.getStartingImageReference())
                         .fit()
@@ -77,7 +81,7 @@ public class RecommendationsActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                intent.putExtra("tab", 3);
+                intent.putExtra("tab", 4);
                 startActivity(intent);
                 finish();
             }

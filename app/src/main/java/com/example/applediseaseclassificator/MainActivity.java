@@ -15,7 +15,7 @@ import com.google.android.material.navigation.NavigationBarView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-public class MainActivity extends AppCompatActivity implements NavigationBarView.OnItemSelectedListener{
+public class MainActivity extends AppCompatActivity implements NavigationBarView.OnItemSelectedListener, RecommendationSystemRecyclerViewOnClickInterface {
 
     FirebaseAuth auth;
     FirebaseUser user;
@@ -26,7 +26,8 @@ public class MainActivity extends AppCompatActivity implements NavigationBarView
 
     ClassifyDiseaseFragment classifyDiseaseFragment = new ClassifyDiseaseFragment();
     WeatherForecastFragment weatherForecastFragment = new WeatherForecastFragment();
-    ThirdFragment thirdFragment = new ThirdFragment();
+    RecommendationSystemsFragment recommendationSystemsFragment = new RecommendationSystemsFragment();
+    InfoFragment infoFragment = new InfoFragment();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,11 +43,18 @@ public class MainActivity extends AppCompatActivity implements NavigationBarView
         int tab = bundle.getInt("tab");
         bottomNavigationView = findViewById(R.id.bnvBottomNavigation);
         bottomNavigationView.setOnItemSelectedListener(this);
-        if(tab == 3){
+
+        if(tab == 1){
+            bottomNavigationView.setSelectedItemId(R.id.tab1);
+        }
+        else if(tab == 2){
+            bottomNavigationView.setSelectedItemId(R.id.tab2);
+        }
+        else if(tab == 3){
             bottomNavigationView.setSelectedItemId(R.id.tab3);
         }
         else{
-            bottomNavigationView.setSelectedItemId(R.id.tab1);
+            bottomNavigationView.setSelectedItemId(R.id.tab4);
         }
 
         if (user == null){
@@ -76,17 +84,29 @@ public class MainActivity extends AppCompatActivity implements NavigationBarView
 
         switch (item.getItemId()){
             case R.id.tab1:
-                getSupportFragmentManager().beginTransaction().replace(R.id.flFragmentCountainer, classifyDiseaseFragment).commit();
+                getSupportFragmentManager().beginTransaction().replace(R.id.flFragmentCountainer, infoFragment).commit();
                 return true;
 
             case R.id.tab2:
-                getSupportFragmentManager().beginTransaction().replace(R.id.flFragmentCountainer, weatherForecastFragment).commit();
+                getSupportFragmentManager().beginTransaction().replace(R.id.flFragmentCountainer, classifyDiseaseFragment).commit();
                 return true;
 
             case R.id.tab3:
-                getSupportFragmentManager().beginTransaction().replace(R.id.flFragmentCountainer, thirdFragment).commit();
+                getSupportFragmentManager().beginTransaction().replace(R.id.flFragmentCountainer, weatherForecastFragment).commit();
+                return true;
+
+            case R.id.tab4:
+                getSupportFragmentManager().beginTransaction().replace(R.id.flFragmentCountainer, recommendationSystemsFragment).commit();
                 return true;
         }
         return false;
+    }
+
+    @Override
+    public void onRecommendationSystemItemClick(RecommendationSystem recommendationSystem) {
+        //This handles on item click from recycler view in recommendationSystemsFragment
+        Intent intent = new Intent(this, RecommendationsActivity.class);
+        intent.putExtra("recommendation_system_id", recommendationSystem.getId());
+        startActivity(intent);
     }
 }

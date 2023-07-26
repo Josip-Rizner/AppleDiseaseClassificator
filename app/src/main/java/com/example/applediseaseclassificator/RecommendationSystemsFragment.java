@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class ThirdFragment extends Fragment {
+public class RecommendationSystemsFragment extends Fragment{
 
     private RecyclerView rvRecommendationSystems;
     private SystemRecommendationAdapter systemRecommendationAdapter;
@@ -42,12 +42,12 @@ public class ThirdFragment extends Fragment {
     private String mParam1;
     private String mParam2;
 
-    public ThirdFragment() {
+    public RecommendationSystemsFragment() {
         // Required empty public constructor
     }
 
-    public static ThirdFragment newInstance(String param1, String param2) {
-        ThirdFragment fragment = new ThirdFragment();
+    public static RecommendationSystemsFragment newInstance(String param1, String param2) {
+        RecommendationSystemsFragment fragment = new RecommendationSystemsFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -67,7 +67,7 @@ public class ThirdFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_third, container, false);
+        View view = inflater.inflate(R.layout.fragment_recommendation_systems, container, false);
 
         rvRecommendationSystems = view.findViewById(R.id.rvSystemRecommendations);
         rvRecommendationSystems.setHasFixedSize(true);
@@ -87,7 +87,7 @@ public class ThirdFragment extends Fragment {
                     recommendationSystemList.add(recommendationSystem);
                 }
 
-                systemRecommendationAdapter = new SystemRecommendationAdapter(getContext(), recommendationSystemList);
+                systemRecommendationAdapter = new SystemRecommendationAdapter(getContext(), recommendationSystemList, (RecommendationSystemRecyclerViewOnClickInterface) getContext());
                 rvRecommendationSystems.setAdapter(systemRecommendationAdapter);
             }
 
