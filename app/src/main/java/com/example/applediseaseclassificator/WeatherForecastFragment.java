@@ -1,6 +1,7 @@
 package com.example.applediseaseclassificator;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -45,7 +46,7 @@ public class WeatherForecastFragment extends Fragment {
     final String WEATHER_URL = "https://api.openweathermap.org/data/2.5/forecast"; //forecast
     final String CITY_LOCATION_URL = "https://api.openweathermap.org/geo/1.0/direct";
 
-    final long MIN_TIME = 400;
+    final long MIN_TIME = 10000;
     final float MIN_DISTANCE = 10000;
     final int REQUEST_CODE = 101;
 
@@ -106,7 +107,7 @@ public class WeatherForecastFragment extends Fragment {
     @Override
     public void onResume() {
         swUseCurrentLocation.setChecked(locationSwitchSwitched);
-        if(currentlySetWeatherData != null){
+        if (currentlySetWeatherData != null) {
             updateUI(currentlySetWeatherData);
         }
 
@@ -129,20 +130,19 @@ public class WeatherForecastFragment extends Fragment {
         btnFetchWeather = view.findViewById(R.id.btnFetchWeather);
         ibRefresh = view.findViewById(R.id.ibRefresh);
 
-        loadingDialog = new LoadingDialog(getActivity());
+        loadingDialog = new LoadingDialog(getActivity(), "Getting data, please wait...");
 
         rvWeatherForecast = view.findViewById(R.id.rvWeather);
 
         swUseCurrentLocation.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                if(isChecked){
+                if (isChecked) {
                     llSetLocation.setVisibility(View.GONE);
                     Toast.makeText(getActivity(), "Fetching data for current location", Toast.LENGTH_SHORT).show();
                     getWeatherForCurrentLocation();
                     locationSwitchSwitched = true;
-                }
-                else{
+                } else {
                     llSetLocation.setVisibility(View.VISIBLE);
                     locationSwitchSwitched = false;
                 }
@@ -165,9 +165,26 @@ public class WeatherForecastFragment extends Fragment {
         ibRefresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                getWeatherForCurrentLocation();
+
+                @SuppressLint("MissingPermission") Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                if(currentlySetWeatherData != null){
+                    if (swUseCurrentLocation.isChecked()){
+                        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
+                            return;
+                        }
+
+                        LocationManager locationManagerRefresh = (LocationManager) getActivity().getSystemService(getContext().LOCATION_SERVICE);
+                        Location locationRefresh = locationManagerRefresh.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                        createWeatherRequest(Double.toString(locationRefresh.getLatitude()), Double.toString(locationRefresh.getLongitude()));
+                    }
+                    else{
+                        createCityLocationRequest(tvCity.getText().toString());
+                    }
+                }
             }
         });
+
         if(currentlySetWeatherData == null){
             getWeatherForCurrentLocation();
         }
@@ -204,7 +221,6 @@ public class WeatherForecastFragment extends Fragment {
         };
 
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.CAMERA}, 100);
 
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
             return;
@@ -294,7 +310,7 @@ public class WeatherForecastFragment extends Fragment {
         fetchData(params, WEATHER_URL);
     }
 
-    private  void createCityLocationRequest(String cityName){
+    public void createCityLocationRequest(String cityName){
         RequestParams params = new RequestParams();
         params.put("q", cityName);
         params.put("limit", 1);
