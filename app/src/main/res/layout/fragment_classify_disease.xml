@@ -50,6 +50,18 @@
             android:visibility="gone"
             android:layout_margin="5dp"/>
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawableStart="@drawable/ic_baseline_info_24"
+            android:textStyle="italic"
+            android:layout_marginTop="10dp"
+            android:textSize="15sp"
+            android:textColor="@color/dark_gray"
+            android:text="Take a picture or load an image from gallery to start a recommendation system"
+            android:gravity="center_horizontal"
+            android:layout_margin="5dp"/>
+
 
     </LinearLayout>
 

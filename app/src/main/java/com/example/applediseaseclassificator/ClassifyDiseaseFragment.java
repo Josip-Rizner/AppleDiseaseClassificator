@@ -36,7 +36,8 @@ public class ClassifyDiseaseFragment extends Fragment {
     Button btnOpenCamera, btnOpenGallery, btnStartRecommendationSystem;
     ImageView ivImage;
     TextView tvClass;
-    int imageSize = 128;
+    int imageSize;
+    DiseaseClassificator diseaseClassificator;
 
     private Bitmap setImage = null;
     private String setClass = null;
@@ -53,6 +54,11 @@ public class ClassifyDiseaseFragment extends Fragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        if (diseaseClassificator == null) {
+            this.diseaseClassificator = new DiseaseClassificator(getContext());
+            this.imageSize = diseaseClassificator.getImageSize();
+        }
+
         super.onCreate(savedInstanceState);
 
     }
@@ -119,54 +125,6 @@ public class ClassifyDiseaseFragment extends Fragment {
         return view;
     }
 
-    public void classifyDisease(Bitmap image){
-        try {
-            Model model = Model.newInstance(getContext());
-
-            // Creates inputs for reference.
-            TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 128, 128, 3}, DataType.FLOAT32);
-            ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4 * imageSize * imageSize * 3);
-            byteBuffer.order(ByteOrder.nativeOrder());
-
-            int[] intValues = new int[imageSize * imageSize];
-            int pixel = 0;
-            //iterate over each pixel and extract R, G and B values. Add those values individually to the byte buffer.
-            image.getPixels(intValues, 0, image.getWidth(), 0, 0, image.getWidth(), image.getHeight());
-            for(int i = 0; i < imageSize; i++){
-                for(int j = 0; j < imageSize; j++){
-                    int val = intValues[pixel++];
-                    byteBuffer.putFloat(((val >> 16) & 0xFF) * (1.f / 1));
-                    byteBuffer.putFloat(((val >> 8) & 0xFF) * (1.f / 1));
-                    byteBuffer.putFloat((val & 0xFF) * (1.f / 1));
-                }
-            }
-
-            inputFeature0.loadBuffer(byteBuffer);
-
-            // Runs model inference and gets result.
-            Model.Outputs outputs = model.process(inputFeature0);
-            TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
-
-            float[] confidence = outputFeature0.getFloatArray();
-            float maxConfidence = 0;
-            int maxPos = 0;
-            for(int i = 0; i < confidence.length; i++){
-                if(confidence[i] > maxConfidence){
-                    maxConfidence = confidence[i];
-                    maxPos = i;
-                }
-            }
-
-            String[] classes = {"complex", "frog_eye_leaf_spot", "frog_eye_leaf_spot complex", "healthy", "powdery_mildew", "powdery_mildew complex", "rust", "rust complex", "rust frog_eye_leaf_spot", "scab", "scab frog_eye_leaf_spot", "scab frog_eye_leaf_spot complex"};
-            tvClass.setText(classes[maxPos]);
-            setClass = classes[maxPos];
-
-            // Releases model resources if no longer used.
-            model.close();
-        } catch (IOException e) {
-            // TODO Handle the exception
-        }
-    }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -185,7 +143,9 @@ public class ClassifyDiseaseFragment extends Fragment {
             setImage(image);
 
             image = Bitmap.createScaledBitmap(image, imageSize, imageSize, false);
-            classifyDisease(image);
+            diseaseClassificator.classifyDisease(image);
+            setClass = diseaseClassificator.getClassifiedClass();
+            tvClass.setText(setClass);
         }
         else{
             Uri dat = null;
@@ -205,7 +165,9 @@ public class ClassifyDiseaseFragment extends Fragment {
             setImage(image);
 
             image = Bitmap.createScaledBitmap(image, imageSize, imageSize, false);
-            classifyDisease(image);
+            diseaseClassificator.classifyDisease(image);
+            setClass = diseaseClassificator.getClassifiedClass();
+            tvClass.setText(setClass);
         }
         super.onActivityResult(requestCode, resultCode, data);
 
