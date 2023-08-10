@@ -6,6 +6,17 @@
     android:padding="20dp"
     tools:context=".RecommendationSystemsFragment">
 
+    <TextView
+        android:id="@+id/tvNoRecommendationSystems"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:layout_gravity="center_horizontal"
+        android:drawableStart="@drawable/ic_baseline_info_24"
+        android:drawablePadding="10dp"
+        android:textStyle="italic"
+        android:text="There are no Recommendation system."/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvSystemRecommendations"
         android:layout_width="match_parent"
