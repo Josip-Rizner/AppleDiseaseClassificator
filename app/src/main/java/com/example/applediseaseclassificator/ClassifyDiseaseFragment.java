@@ -116,7 +116,7 @@ public class ClassifyDiseaseFragment extends Fragment {
         btnStartRecommendationSystem.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                StartRecommendationsDialog startRecommendationsDialog = new StartRecommendationsDialog(setImage);
+                StartRecommendationsDialog startRecommendationsDialog = new StartRecommendationsDialog(setImage, diseaseClassificator.getClassifiedClass(), diseaseClassificator.getDiseaseConfidences());
                 startRecommendationsDialog.show(getActivity().getSupportFragmentManager(), "start recommendation dialog");
             }
         });

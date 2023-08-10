@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -28,6 +29,7 @@ public class RecommendationSystemsFragment extends Fragment{
 
     private RecyclerView rvRecommendationSystems;
     private SystemRecommendationAdapter systemRecommendationAdapter;
+    private TextView tvNoRecommendationSystems;
 
     private FirebaseAuth firebaseAuth;
     private FirebaseUser user;
@@ -70,6 +72,7 @@ public class RecommendationSystemsFragment extends Fragment{
         View view = inflater.inflate(R.layout.fragment_recommendation_systems, container, false);
 
         rvRecommendationSystems = view.findViewById(R.id.rvSystemRecommendations);
+        tvNoRecommendationSystems = view.findViewById(R.id.tvNoRecommendationSystems);
         rvRecommendationSystems.setHasFixedSize(true);
         rvRecommendationSystems.setLayoutManager(new LinearLayoutManager(getContext()));
 
@@ -88,6 +91,10 @@ public class RecommendationSystemsFragment extends Fragment{
                 }
 
                 systemRecommendationAdapter = new SystemRecommendationAdapter(getContext(), recommendationSystemList, (RecommendationSystemRecyclerViewOnClickInterface) getContext());
+
+                if(systemRecommendationAdapter.getItemCount() > 0){
+                    tvNoRecommendationSystems.setVisibility(View.GONE);
+                }
                 rvRecommendationSystems.setAdapter(systemRecommendationAdapter);
             }
 

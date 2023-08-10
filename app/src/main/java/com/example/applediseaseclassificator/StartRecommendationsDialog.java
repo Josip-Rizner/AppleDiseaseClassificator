@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -35,6 +36,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
@@ -47,6 +49,9 @@ import com.loopj.android.http.RequestParams;
 import org.json.JSONArray;
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import cz.msebera.android.httpclient.Header;
 
@@ -65,14 +70,21 @@ public class StartRecommendationsDialog extends AppCompatDialogFragment {
     private LinearLayout llSetLocation;
 
     private Bitmap image;
+    private String classifiedDisease;
+    private List<Float> diseaseConfidences = new ArrayList<>();
     private String latitude = null;
     private String longitude = null;
 
     private FirebaseAuth mAuth;
     private FirebaseUser user;
 
-    public StartRecommendationsDialog(Bitmap image){
+    public StartRecommendationsDialog(Bitmap image, String classifiedDisease, float[] diseaseConfidences){
         this.image = image;
+        this.classifiedDisease = classifiedDisease;
+        for (float diseaseConfidence : diseaseConfidences){
+            this.diseaseConfidences.add(diseaseConfidence);
+        }
+
     }
 
     @NonNull
@@ -96,7 +108,6 @@ public class StartRecommendationsDialog extends AppCompatDialogFragment {
         llSetLocation = view.findViewById(R.id.llOtherLocation);
         mAuth = FirebaseAuth.getInstance();
         user = mAuth.getCurrentUser();
-
 
         btnCreateRecommendationSystem.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -221,7 +232,7 @@ public class StartRecommendationsDialog extends AppCompatDialogFragment {
         DatabaseReference dbReference = FirebaseDatabase.getInstance().getReference("RecommendationSystems");
 
         String recommendationSystemId = dbReference.push().getKey();
-        RecommendationSystem recommendationSystem = new RecommendationSystem(recommendationSystemId ,latitude, longitude, name, image_reference);
+        RecommendationSystem recommendationSystem = new RecommendationSystem(recommendationSystemId ,latitude, longitude, name, image_reference, classifiedDisease, diseaseConfidences);
 
         dbReference.child(user.getUid()).child(recommendationSystemId).setValue(recommendationSystem).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override

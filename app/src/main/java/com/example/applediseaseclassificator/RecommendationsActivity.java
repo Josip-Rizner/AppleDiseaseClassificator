@@ -61,7 +61,7 @@ public class RecommendationsActivity extends AppCompatActivity {
 
                 tvName.setText(recommendationSystem.getName());
                 tvLatLong.setText(recommendationSystem.getLatitude() + " / " + recommendationSystem.getLongitude());
-                tvDisease.setText("TODO");
+                tvDisease.setText(recommendationSystem.getClassifiedDisease());
 
                 Picasso.with(getApplicationContext())
                         .load(recommendationSystem.getStartingImageReference())
