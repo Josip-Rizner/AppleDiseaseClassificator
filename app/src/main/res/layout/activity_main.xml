@@ -19,16 +19,15 @@
             android:id="@+id/test"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_weight="0.9"
+            android:layout_weight="1"
             android:gravity="center"
             android:text="test" />
 
-        <Button
+        <ImageButton
             android:id="@+id/btnLogout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="0.1"
-            android:text="@string/logout" />
+            android:background="@drawable/ic_baseline_logout_48" />
 
     </LinearLayout>
 

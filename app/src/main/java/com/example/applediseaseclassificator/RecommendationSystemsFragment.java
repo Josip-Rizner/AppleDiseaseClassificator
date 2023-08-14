@@ -28,7 +28,7 @@ import java.util.List;
 public class RecommendationSystemsFragment extends Fragment{
 
     private RecyclerView rvRecommendationSystems;
-    private SystemRecommendationAdapter systemRecommendationAdapter;
+    private RecommendationSystemsAdapter recommendationSystemsAdapter;
     private TextView tvNoRecommendationSystems;
 
     private FirebaseAuth firebaseAuth;
@@ -90,12 +90,12 @@ public class RecommendationSystemsFragment extends Fragment{
                     recommendationSystemList.add(recommendationSystem);
                 }
 
-                systemRecommendationAdapter = new SystemRecommendationAdapter(getContext(), recommendationSystemList, (RecommendationSystemRecyclerViewOnClickInterface) getContext());
+                recommendationSystemsAdapter = new RecommendationSystemsAdapter(getContext(), recommendationSystemList, (RecommendationSystemRecyclerViewOnClickInterface) getContext());
 
-                if(systemRecommendationAdapter.getItemCount() > 0){
+                if(recommendationSystemsAdapter.getItemCount() > 0){
                     tvNoRecommendationSystems.setVisibility(View.GONE);
                 }
-                rvRecommendationSystems.setAdapter(systemRecommendationAdapter);
+                rvRecommendationSystems.setAdapter(recommendationSystemsAdapter);
             }
 
             @Override

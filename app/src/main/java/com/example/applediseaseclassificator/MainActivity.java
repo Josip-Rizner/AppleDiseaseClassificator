@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -19,7 +20,7 @@ public class MainActivity extends AppCompatActivity implements NavigationBarView
 
     FirebaseAuth auth;
     FirebaseUser user;
-    Button btnLogout;
+    ImageButton btnLogout;
     TextView tvUser;
 
     BottomNavigationView bottomNavigationView;
@@ -92,11 +93,11 @@ public class MainActivity extends AppCompatActivity implements NavigationBarView
                 return true;
 
             case R.id.tab3:
-                getSupportFragmentManager().beginTransaction().replace(R.id.flFragmentCountainer, weatherForecastFragment).commit();
+                getSupportFragmentManager().beginTransaction().replace(R.id.flFragmentCountainer, recommendationSystemsFragment).commit();
                 return true;
 
             case R.id.tab4:
-                getSupportFragmentManager().beginTransaction().replace(R.id.flFragmentCountainer, recommendationSystemsFragment).commit();
+                getSupportFragmentManager().beginTransaction().replace(R.id.flFragmentCountainer, weatherForecastFragment).commit();
                 return true;
         }
         return false;

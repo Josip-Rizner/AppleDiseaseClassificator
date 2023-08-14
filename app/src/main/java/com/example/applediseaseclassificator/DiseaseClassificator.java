@@ -56,7 +56,6 @@ public class DiseaseClassificator {
             TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
 
             float[] confidence = outputFeature0.getFloatArray();
-            this.diseaseConfidences = confidence;
             float maxConfidence = 0;
             int maxPos = 0;
             for(int i = 0; i < confidence.length; i++){
@@ -68,6 +67,7 @@ public class DiseaseClassificator {
 
             this.maxConfidencePosition = maxPos;
             this.classifiedClass = classes[maxPos];
+            this.diseaseConfidences = rescaleConfidences(confidence);
 
             // Releases model resources if no longer used.
             model.close();
@@ -76,6 +76,31 @@ public class DiseaseClassificator {
         } catch (IOException e) {
             // TODO Handle the exception
         }
+    }
+
+    public float[] rescaleConfidences(float[] inputArray) {
+        float minValue = Float.MAX_VALUE;
+        float maxValue = Float.MIN_VALUE;
+
+        // Find the minimum and maximum values in the input array
+        for (float value : inputArray) {
+            if (value < minValue) {
+                minValue = value;
+            }
+            if (value > maxValue) {
+                maxValue = value;
+            }
+        }
+
+        // Scale the values to the [0, 1] interval
+        float scaleFactor = maxValue - minValue;
+        float[] scaledArray = new float[inputArray.length];
+
+        for (int i = 0; i < inputArray.length; i++) {
+            scaledArray[i] = (inputArray[i] - minValue) / scaleFactor;
+        }
+
+        return scaledArray;
     }
 
 
