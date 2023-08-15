@@ -174,6 +174,7 @@ public class WeatherForecastFragment extends Fragment {
                             return;
                         }
 
+                        getWeatherForCurrentLocation();
                         LocationManager locationManagerRefresh = (LocationManager) getActivity().getSystemService(getContext().LOCATION_SERVICE);
                         Location locationRefresh = locationManagerRefresh.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                         createWeatherRequest(Double.toString(locationRefresh.getLatitude()), Double.toString(locationRefresh.getLongitude()));

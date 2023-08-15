@@ -41,15 +41,27 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.JsonHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
 import com.squareup.picasso.Picasso;
+
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
+import cz.msebera.android.httpclient.Header;
+
 public class RecommendationsActivity extends AppCompatActivity {
+
+    final String API_KEY = "8edb0515f032b02779527dc60e0023e4";
+    final String WEATHER_URL = "https://api.openweathermap.org/data/2.5/forecast";
 
     private TextView tvName, tvLatLong, tvDisease;
     private ImageButton btnBack;
@@ -113,8 +125,15 @@ public class RecommendationsActivity extends AppCompatActivity {
                     createTreatmentRecommendation();
                 }
                 else if (lastMessage.getRecommendationMessageType() == 11){
-                    createWeatherCheckRecommendation();
+                    createWeatherRequest(recommendationSystem.getLatitude(), recommendationSystem.getLongitude());
                 }
+                else if (lastMessage.getRecommendationMessageType() == 11){
+                    createWeatherRequest(recommendationSystem.getLatitude(), recommendationSystem.getLongitude());
+                }
+                else if (lastMessage.getRecommendationMessageType() == 30){
+                    createTreatmentEffectivenessAnswer(lastMessage.getDiseaseConfidences());
+                }
+
             }
 
             @Override
@@ -221,8 +240,26 @@ public class RecommendationsActivity extends AppCompatActivity {
         addRecommendationMessage(message);
     }
 
-    private void createDiseaseCheckAnswer(){
+    private void createTreatmentEffectivenessAnswer(List<Float> currentDiseaseConfidences){
+        List<Float> pastDiseaseConfidences;
+        pastDiseaseConfidences = getDiseaseConfidencesFromLastCheck();
 
+
+    }
+
+    private List<Float> getDiseaseConfidencesFromLastCheck() {
+
+        List<Float> confidences = new ArrayList<>();
+        List<SimpleMessage> messages = recommendationSystem.getRecommendationMessages();
+        Collections.reverse(messages);
+
+        for (SimpleMessage message : messages){
+            if(message.getRecommendationMessageType() == 30){
+                return message.getDiseaseConfidences();
+            }
+        }
+
+        return recommendationSystem.getStartDiseaseConfidences();
     }
 
     private void createWeatherCheckRequest(){
@@ -230,10 +267,59 @@ public class RecommendationsActivity extends AppCompatActivity {
         addRecommendationMessage(message);
     }
 
-    private void createWeatherCheckRecommendation(){
+    private void createWeatherCheckRecommendation(WeatherData weatherData){
+        List<Integer> weatherIds = weatherData.getWeatherIdsList();
+        List<String> date_time = weatherData.getDateTimeList();
+        //24 is 3 days since forecast is in steps of 3 hours
+        List<String> treatmentWindow = findTreatmentWindow(weatherIds, date_time, 24);
+        int mostOccurring;
 
+        if(treatmentWindow.size() == 0){
+            mostOccurring = weatherData.findMostOccurringBadWeatherId(weatherIds);
+        }
+        else {
+            mostOccurring = weatherData.findMostOccurringWeatherId(weatherIds);
+        }
+
+        String url = weatherData.getWeatherImageUrl(mostOccurring);
+        String forecastMessage = weatherData.getWeatherForecastMessage(mostOccurring);
+        SimpleMessage message;
+
+        if(treatmentWindow.size() == 0){
+            message = new SimpleMessage("Unfortunately there is no window where plantation can be treated. \nThere will be " + forecastMessage + " in the next 5 days.\n\nPlease check for the treatment window in the few days.", url, 20);
+
+        }
+        else {
+            message = new SimpleMessage("There is window from: " + treatmentWindow.get(0) + " - " + treatmentWindow.get(treatmentWindow.size() - 1) + "\nIn that period it will be " + forecastMessage + "\n\nIt is recommended to threat your plantation as close to the first date as possible for the best results.", url, 20);
+        }
+        addRecommendationMessage(message);
     }
 
+    public static List<String> findTreatmentWindow(List<Integer> weatherIds, List<String> date_times, int treatingWindowSize) {
+        List<String> treatingWindow = new ArrayList<>();
+
+        for (int i = 0; i < weatherIds.size(); i++) {
+            int currentValue = weatherIds.get(i);
+            String currentString = date_times.get(i);
+
+            if (currentValue >= 800) {
+                treatingWindow.add(currentString);
+            } else {
+                if(treatingWindow.size() < treatingWindowSize){
+                    treatingWindow.clear();
+                }
+                else{
+                    break;
+                }
+            }
+        }
+
+        if(treatingWindow.size() < treatingWindowSize){
+            treatingWindow.clear();
+        }
+
+        return treatingWindow;
+    }
 
     private void showOptionDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -380,6 +466,39 @@ public class RecommendationsActivity extends AppCompatActivity {
         ContentResolver cR = getContentResolver();
         MimeTypeMap mime = MimeTypeMap.getSingleton();
         return  mime.getExtensionFromMimeType(cR.getType(uri));
+    }
+
+    private void createWeatherRequest(String latitude, String longitude){
+        RequestParams params = new RequestParams();
+
+        params.put("lat", latitude);
+        params.put("lon", longitude);
+        params.put("units", "metric");
+        params.put("appid", API_KEY);
+
+        fetchData(params, WEATHER_URL);
+    }
+
+    private void fetchData(RequestParams params, String URL){
+
+        AsyncHttpClient client = new AsyncHttpClient();
+
+        client.get(URL, params, new JsonHttpResponseHandler(){
+
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                super.onSuccess(statusCode, headers, response);
+                Toast.makeText(RecommendationsActivity.this, "Data fetched successfully ", Toast.LENGTH_SHORT).show();
+                WeatherData weatherData = WeatherData.fromJson(response);
+                createWeatherCheckRecommendation(weatherData);
+            }
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                super.onFailure(statusCode, headers, throwable, errorResponse);
+
+                Toast.makeText(RecommendationsActivity.this, "Data NOT fetched", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
 }

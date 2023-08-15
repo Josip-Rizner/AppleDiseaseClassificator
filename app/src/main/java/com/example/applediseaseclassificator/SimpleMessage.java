@@ -13,6 +13,7 @@ public class SimpleMessage {
     // Following messages are with images
     //20 - weather status answer
     //30 - User checking if treatment works
+    //40 - Treatment effectiveness answer
 
     private int recommendationMessageType;
     private long timestamp;

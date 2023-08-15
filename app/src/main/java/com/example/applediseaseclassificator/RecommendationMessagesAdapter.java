@@ -27,8 +27,8 @@ public class RecommendationMessagesAdapter extends RecyclerView.Adapter<Recommen
 
     public static class RecommendationMessagesViewHolder extends RecyclerView.ViewHolder{
 
-        public TextView tvMessage, tvUserSimpleRequest, tvUserRequestWithImage;
-        public ImageView ivUserRequestWithImage;
+        public TextView tvMessage, tvUserSimpleRequest, tvUserRequestWithImage, tvSimpleAnswerWithImage;
+        public ImageView ivUserRequestWithImage, ivSimpleAnswerWithImage;
 
 
         public RecommendationMessagesViewHolder(@NonNull View itemView) {
@@ -40,6 +40,9 @@ public class RecommendationMessagesAdapter extends RecyclerView.Adapter<Recommen
 
             this.tvUserRequestWithImage = itemView.findViewById(R.id.tvSimpleUserRequestWithImage);
             this.ivUserRequestWithImage = itemView.findViewById(R.id.ivSimpleUserRequestWithImage);
+
+            this.tvSimpleAnswerWithImage = itemView.findViewById(R.id.tvSimpleAnswerWithImage);
+            this.ivSimpleAnswerWithImage = itemView.findViewById(R.id.ivSimpleAnswerWithImage);
         }
 
     }
@@ -56,6 +59,9 @@ public class RecommendationMessagesAdapter extends RecyclerView.Adapter<Recommen
         }
         else if (viewType >= 10 && viewType <= 19){
             listItem = layoutInflater.inflate(R.layout.recyclerview_user_simple_answer_item, parent, false);
+        }
+        else if (viewType == 20){
+            listItem = layoutInflater.inflate(R.layout.recyclerview_info_msg_with_image_item, parent, false);
         }
         else if (viewType == 30){
             listItem = layoutInflater.inflate(R.layout.recyclerview_user_simple_answer_with_image_item, parent, false);
@@ -75,6 +81,16 @@ public class RecommendationMessagesAdapter extends RecyclerView.Adapter<Recommen
         }
         else if(message.getRecommendationMessageType() >= 10 && message.getRecommendationMessageType() <= 19){
             holder.tvUserSimpleRequest.setText(message.getMessage());
+        }
+        else if(message.getRecommendationMessageType() == 20){
+            holder.tvSimpleAnswerWithImage.setText(message.getMessage());
+
+            Picasso.with(context)
+                    .load(message.getImageReference())
+                    .fit()
+                    .centerCrop()
+                    .into(holder.ivSimpleAnswerWithImage);
+
         }
         else if(message.getRecommendationMessageType() == 30){
             holder.tvUserRequestWithImage.setText(message.getMessage());
