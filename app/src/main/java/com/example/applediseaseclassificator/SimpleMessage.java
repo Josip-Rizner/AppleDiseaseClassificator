@@ -8,12 +8,14 @@ public class SimpleMessage {
     //recommendation message types:
     //0 - informative system message
     //1 - Healthy plantation message
+    //2 - Treatment effectiveness answer - disease change
     //10 - User Treatment request
     //11 - User weather/when to treat request
     // Following messages are with images
     //20 - weather status answer
     //30 - User checking if treatment works
     //40 - Treatment effectiveness answer
+
 
     private int recommendationMessageType;
     private long timestamp;

@@ -94,7 +94,7 @@ public class WeatherData {
 
         // Count the frequency of each number that is not higher than 800
         for (int num : weatherIds) {
-            if (num <= 800) {
+            if (num < 800) {
                 frequencyMap.put(num, frequencyMap.getOrDefault(num, 0) + 1);
             }
         }

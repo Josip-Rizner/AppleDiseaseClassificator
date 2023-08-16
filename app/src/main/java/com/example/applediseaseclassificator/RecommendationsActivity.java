@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.Manifest;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -64,7 +65,7 @@ public class RecommendationsActivity extends AppCompatActivity {
     final String WEATHER_URL = "https://api.openweathermap.org/data/2.5/forecast";
 
     private TextView tvName, tvLatLong, tvDisease;
-    private ImageButton btnBack;
+    private ImageButton btnBack, btnDelete;
     private ImageView ivStartingImage;
     private TextView btnTreatingRecommendation, btnDiseaseCheck, btnWhenToTreatRecommendation;
 
@@ -90,6 +91,7 @@ public class RecommendationsActivity extends AppCompatActivity {
         tvLatLong = findViewById(R.id.tvLatLong);
         tvDisease = findViewById(R.id.tvClass);
         btnBack = findViewById(R.id.btnBack);
+        btnDelete = findViewById(R.id.btnDelete);
         ivStartingImage = findViewById(R.id.ivStartingImage);
         btnTreatingRecommendation = findViewById(R.id.btnTreatingRecommendation);
         btnDiseaseCheck = findViewById(R.id.btnDiseaseCheck);
@@ -106,7 +108,11 @@ public class RecommendationsActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 RecommendationSystem recommendationSystem = snapshot.getValue(RecommendationSystem.class);
+                if (recommendationSystem == null){
+                    return;
+                }
                 setRecommendationSystem(recommendationSystem);
+                updateRecommendationMessages(recommendationSystem);
 
                 tvName.setText(recommendationSystem.getName());
                 tvLatLong.setText(recommendationSystem.getLatitude() + " / " + recommendationSystem.getLongitude());
@@ -118,7 +124,6 @@ public class RecommendationsActivity extends AppCompatActivity {
                         .centerCrop()
                         .into(ivStartingImage);
 
-                updateRecommendationMessages(recommendationSystem);
 
                 SimpleMessage lastMessage = recommendationSystem.getRecommendationMessages().get(recommendationSystem.getRecommendationMessages().size()-1);
                 if (lastMessage.getRecommendationMessageType() == 10){
@@ -152,6 +157,12 @@ public class RecommendationsActivity extends AppCompatActivity {
             }
         });
 
+        btnDelete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                deleteRecommendationSystem(recommendationSystem.getId());
+            }
+        });
 
         btnTreatingRecommendation.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -222,11 +233,13 @@ public class RecommendationsActivity extends AppCompatActivity {
 
 
     private void createTreatmentRecommendationRequest(){
-        SimpleMessage message = new SimpleMessage("Give me treatment recommendation", 10);
+        SimpleMessage message = new SimpleMessage("What should I use to treat my plantation?", 10);
         addRecommendationMessage(message);
     }
 
     private void createTreatmentRecommendation() {
+        List<Float> lastDiseaseConfidences = getDiseaseConfidencesFromLastCheck();
+        String className = DiseaseClassificator.getDiseaseName(getHighestConfidenceIndex(lastDiseaseConfidences));
         SimpleMessage message = new SimpleMessage("this is treatment recommendation", 0);
         addRecommendationMessage(message);
     }
@@ -241,21 +254,50 @@ public class RecommendationsActivity extends AppCompatActivity {
     }
 
     private void createTreatmentEffectivenessAnswer(List<Float> currentDiseaseConfidences){
-        List<Float> pastDiseaseConfidences;
-        pastDiseaseConfidences = getDiseaseConfidencesFromLastCheck();
+        List<Float> pastDiseaseConfidences = getDiseaseConfidencesFromLastCheck();
+        String currentDisease = DiseaseClassificator.getDiseaseName(getHighestConfidenceIndex(currentDiseaseConfidences));
+        String lastClassifiedDisease = DiseaseClassificator.getDiseaseName(getHighestConfidenceIndex(pastDiseaseConfidences));
 
+        if (currentDisease == "healthy"){
+            addRecommendationMessage(new SimpleMessage("Great news! Treatment worked and your plantation is now healthy", 1));
+        } else if(currentDisease != lastClassifiedDisease){
+            String currentDiseaseDescription = DiseaseClassificator.getDiseaseClassDescription(currentDisease);
+            String lastClassifiedDiseaseDescription = DiseaseClassificator.getDiseaseClassDescription(lastClassifiedDisease);
+            SimpleMessage message = new SimpleMessage("Looks like your plantation is now infected with:\n\n" + currentDiseaseDescription + "\n\nPreviously it was infected with: " + lastClassifiedDiseaseDescription + "\n\nTreatment didn't work", 2);
+            addRecommendationMessage(message);
+        }
+        else if(currentDisease == lastClassifiedDisease){
+            float treatmentEffectivenessInPercentage = getTreatmentEffectiveness(pastDiseaseConfidences.get(DiseaseClassificator.getClassIndex("healthy")), currentDiseaseConfidences.get(DiseaseClassificator.getClassIndex("healthy")));
+            SimpleMessage message = new SimpleMessage(getTreatmentEffectivenessMessage(treatmentEffectivenessInPercentage), getTreatmentEffectivenessImageUrl(treatmentEffectivenessInPercentage), 40);
+            addRecommendationMessage(message);
+        }
 
+    }
+
+    private float getTreatmentEffectiveness(float confidenceBefore, float confidenceNow){
+
+        return 75f;
+    }
+
+    private int getHighestConfidenceIndex(List<Float> diseaseConfidences){
+        int highestConfidenceIndex = 0;
+        float maxConfidence = diseaseConfidences.get(0);
+        for (int i = 0; i < diseaseConfidences.size(); i++) {
+            if(diseaseConfidences.get(i) > maxConfidence){
+                maxConfidence = diseaseConfidences.get(i);
+                highestConfidenceIndex = i;
+            }
+        }
+        return highestConfidenceIndex;
     }
 
     private List<Float> getDiseaseConfidencesFromLastCheck() {
 
-        List<Float> confidences = new ArrayList<>();
         List<SimpleMessage> messages = recommendationSystem.getRecommendationMessages();
-        Collections.reverse(messages);
 
-        for (SimpleMessage message : messages){
-            if(message.getRecommendationMessageType() == 30){
-                return message.getDiseaseConfidences();
+        for(int i = messages.size()-2; i >= 0; i--){
+            if (messages.get(i).getRecommendationMessageType() == 30){
+                return messages.get(i).getDiseaseConfidences();
             }
         }
 
@@ -378,7 +420,7 @@ public class RecommendationsActivity extends AppCompatActivity {
                 return;
             }
 
-            //Beacuse neural network was trained on square images
+            //Because neural network was trained on square images
             int dimension = Math.min(image.getWidth(), image.getHeight());
             image = ThumbnailUtils.extractThumbnail(image, dimension, dimension);
             Bitmap originalImage  = image;
@@ -501,4 +543,81 @@ public class RecommendationsActivity extends AppCompatActivity {
         });
     }
 
+    private void deleteRecommendationSystem(String id){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        builder.setTitle("Warning")
+                .setMessage("Are you sure you want to delete this recommendation System?")
+                .setCancelable(true)
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("RecommendationSystems").child(user.getUid()).child(id);
+
+                        databaseReference.removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                               if (task.isSuccessful()){
+                                   Toast.makeText(RecommendationsActivity.this, "Recommendation system deleted successfully", Toast.LENGTH_SHORT).show();
+                                   Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                                   intent.putExtra("tab", 3);
+                                   startActivity(intent);
+                                   finish();
+
+                               } else{
+                                   Toast.makeText(RecommendationsActivity.this, "Recommendation system can't be deleted currently, please try later.", Toast.LENGTH_SHORT).show();
+                                   finish();
+                               }
+                            }
+                        });
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.cancel();
+                    }
+                })
+                .show();
+    }
+
+    private String getTreatmentEffectivenessImageUrl(float effectiveness){
+        String url = "";
+        if (effectiveness > 50F){
+            url = "https://firebasestorage.googleapis.com/v0/b/applediseaseclassificator.appspot.com/o/predefined%2Fbetter.png?alt=media&token=b0ea3ee0-e4bd-4928-bcba-6d129a1204b6";
+        }
+        else if (effectiveness > 5F && effectiveness <= 50F){
+            url = "https://firebasestorage.googleapis.com/v0/b/applediseaseclassificator.appspot.com/o/predefined%2Fslightly_better.png?alt=media&token=72e36a2d-0d8f-4d98-b061-9557b2f3e831";
+        }
+        else if (effectiveness >= -5F && effectiveness <= 5F){
+            url = "https://firebasestorage.googleapis.com/v0/b/applediseaseclassificator.appspot.com/o/predefined%2Fsame.png?alt=media&token=8ac07a2f-1f5d-4295-af6b-857bb51c3a81";
+        }
+        else if (effectiveness < -5F && effectiveness >= -50F){
+            url = "https://firebasestorage.googleapis.com/v0/b/applediseaseclassificator.appspot.com/o/predefined%2Fslightly_worse.png?alt=media&token=e042739a-0eb1-4697-b1a7-f1bab3d835f1";
+        }
+        else if (effectiveness < -50F){
+            url = "https://firebasestorage.googleapis.com/v0/b/applediseaseclassificator.appspot.com/o/predefined%2Fworse.png?alt=media&token=2af7e447-c022-483c-a508-2ce1441d011a";
+        }
+        return url;
+    }
+
+    private String getTreatmentEffectivenessMessage(float effectiveness){
+        String message = "";
+        if (effectiveness > 50F){
+            message = "A lot better";
+        }
+        else if (effectiveness > 5F && effectiveness <= 50F){
+            message = "better";
+        }
+        else if (effectiveness >= -5F && effectiveness <= 5F){
+            message = "Roughly the same, no progress";
+        }
+        else if (effectiveness < -5F && effectiveness >= -50F){
+            message = "worse";
+        }
+        else if (effectiveness < -50F){
+            message = "A lot worse";
+        }
+        return message;
+    }
 }

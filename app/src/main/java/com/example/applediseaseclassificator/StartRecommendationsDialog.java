@@ -232,15 +232,16 @@ public class StartRecommendationsDialog extends AppCompatDialogFragment {
     private void saveRecommendationSystemInfo(String latitude, String longitude, String name, String image_reference){
         DatabaseReference dbReference = FirebaseDatabase.getInstance().getReference("RecommendationSystems");
 
+        String diseaseDescription = DiseaseClassificator.getDiseaseClassDescription(classifiedDisease);
         String recommendationSystemId = dbReference.push().getKey();
         List<SimpleMessage> recommendationMessages = new ArrayList<>();
         recommendationMessages.add(new SimpleMessage("This is your \"" + name + "\" plantation."));
         if (classifiedDisease == "healthy"){
             recommendationMessages.add(new SimpleMessage("Your plantation is healthy.", 1));
         } else {
-            recommendationMessages.add(new SimpleMessage("Recognized disease is: " + classifiedDisease));
+            recommendationMessages.add(new SimpleMessage("Recognized disease is: " + diseaseDescription));
         }
-        RecommendationSystem recommendationSystem = new RecommendationSystem(recommendationSystemId ,latitude, longitude, name, image_reference, classifiedDisease, diseaseConfidences, recommendationMessages);
+        RecommendationSystem recommendationSystem = new RecommendationSystem(recommendationSystemId ,latitude, longitude, name, image_reference, diseaseDescription, diseaseConfidences, recommendationMessages);
 
         dbReference.child(user.getUid()).child(recommendationSystemId).setValue(recommendationSystem).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override

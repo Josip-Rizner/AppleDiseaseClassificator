@@ -60,7 +60,7 @@ public class RecommendationMessagesAdapter extends RecyclerView.Adapter<Recommen
         else if (viewType >= 10 && viewType <= 19){
             listItem = layoutInflater.inflate(R.layout.recyclerview_user_simple_answer_item, parent, false);
         }
-        else if (viewType == 20){
+        else if (viewType == 20 || viewType == 40){
             listItem = layoutInflater.inflate(R.layout.recyclerview_info_msg_with_image_item, parent, false);
         }
         else if (viewType == 30){
@@ -82,7 +82,7 @@ public class RecommendationMessagesAdapter extends RecyclerView.Adapter<Recommen
         else if(message.getRecommendationMessageType() >= 10 && message.getRecommendationMessageType() <= 19){
             holder.tvUserSimpleRequest.setText(message.getMessage());
         }
-        else if(message.getRecommendationMessageType() == 20){
+        else if(message.getRecommendationMessageType() == 20 || message.getRecommendationMessageType() == 40){
             holder.tvSimpleAnswerWithImage.setText(message.getMessage());
 
             Picasso.with(context)
