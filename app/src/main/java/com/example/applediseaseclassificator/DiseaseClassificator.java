@@ -15,12 +15,14 @@ import java.nio.ByteOrder;
 public class DiseaseClassificator {
 
     private final int imageSize = 128;
-    private final String[] classes = {"complex", "frog_eye_leaf_spot", "frog_eye_leaf_spot complex", "healthy", "powdery_mildew", "powdery_mildew complex", "rust", "rust complex", "rust frog_eye_leaf_spot", "scab", "scab frog_eye_leaf_spot", "scab frog_eye_leaf_spot complex"};
+    private static final String[] classes = {"complex", "frog_eye_leaf_spot", "frog_eye_leaf_spot complex", "healthy", "powdery_mildew", "powdery_mildew complex", "rust", "rust complex", "rust frog_eye_leaf_spot", "scab", "scab frog_eye_leaf_spot", "scab frog_eye_leaf_spot complex"};
     private Context context;
 
     private float[] diseaseConfidences;
     private String classifiedClass;
     private int maxConfidencePosition;
+
+    public static final String[] diseaseDescriptions = {"To complex to tell", "Frog eye leaf spot", "It is hard to tell but Frog eye leaf spot is the most likely disease", "Healthy", "Powdery mildew", "It is hard to tell but Powdery mildew is the most likely disease", "Rust", "It is hard to tell but Rust is the most likely disease", "Rust and Frog eye leaf spot", "Scab", "Scab and Frog eye leaf spot", "It is hard to tell but Scab and Frog eye leaf spot are the most likely diseases"};
 
     public DiseaseClassificator(Context context){
         this.context = context;
@@ -56,7 +58,6 @@ public class DiseaseClassificator {
             TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
 
             float[] confidence = outputFeature0.getFloatArray();
-            this.diseaseConfidences = confidence;
             float maxConfidence = 0;
             int maxPos = 0;
             for(int i = 0; i < confidence.length; i++){
@@ -68,6 +69,7 @@ public class DiseaseClassificator {
 
             this.maxConfidencePosition = maxPos;
             this.classifiedClass = classes[maxPos];
+            this.diseaseConfidences = rescaleConfidences(confidence);
 
             // Releases model resources if no longer used.
             model.close();
@@ -78,6 +80,64 @@ public class DiseaseClassificator {
         }
     }
 
+    public float[] rescaleConfidences(float[] inputArray) {
+        float minValue = Float.MAX_VALUE;
+        float maxValue = Float.MIN_VALUE;
+
+        // Find the minimum and maximum values in the input array
+        for (float value : inputArray) {
+            if (value < minValue) {
+                minValue = value;
+            }
+            if (value > maxValue) {
+                maxValue = value;
+            }
+        }
+
+        // Scale the values to the [0, 1] interval
+        float scaleFactor = maxValue - minValue;
+        float[] scaledArray = new float[inputArray.length];
+
+        for (int i = 0; i < inputArray.length; i++) {
+            scaledArray[i] = (inputArray[i] - minValue) / scaleFactor;
+        }
+
+        return scaledArray;
+    }
+
+    public static int getClassIndex(String className){
+        for (int i = 0; i < classes.length; i++) {
+            if (classes[i] == className) {
+                return i;
+            }
+        }
+        return -1; // Element not found
+    }
+
+    public String getDiseaseClassDescription(int position){
+        return diseaseDescriptions[position];
+    }
+
+    public static String getDiseaseClassDescription(String className){
+        return diseaseDescriptions[getClassIndex(className)];
+    }
+
+    public int getPositionOfMaxConfidence(float[] confidence){
+        int position = -1;
+        float maxConfidence = confidence[0];
+        
+        for(int i = 0; i < confidence.length; i++){
+            if(confidence[i] > maxConfidence){
+                maxConfidence = confidence[i];
+                position = i;
+            }
+        }
+        return position;
+    }
+
+    public static String getDiseaseName(int position){
+        return classes[position];
+    }
 
     public int getImageSize() {
         return imageSize;

@@ -36,7 +36,6 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
@@ -49,8 +48,10 @@ import com.loopj.android.http.RequestParams;
 import org.json.JSONArray;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import cz.msebera.android.httpclient.Header;
@@ -193,7 +194,7 @@ public class StartRecommendationsDialog extends AppCompatDialogFragment {
     }
 
     private void saveData(){
-        Uri uriImage = getImageUri(image, Bitmap.CompressFormat.JPEG, 1);
+        Uri uriImage = getImageUri(image, Bitmap.CompressFormat.JPEG, 100);
         StorageReference storageReference = FirebaseStorage.getInstance().getReference("images").child(user.getUid());
 
         if(uriImage != null){
@@ -231,8 +232,16 @@ public class StartRecommendationsDialog extends AppCompatDialogFragment {
     private void saveRecommendationSystemInfo(String latitude, String longitude, String name, String image_reference){
         DatabaseReference dbReference = FirebaseDatabase.getInstance().getReference("RecommendationSystems");
 
+        String diseaseDescription = DiseaseClassificator.getDiseaseClassDescription(classifiedDisease);
         String recommendationSystemId = dbReference.push().getKey();
-        RecommendationSystem recommendationSystem = new RecommendationSystem(recommendationSystemId ,latitude, longitude, name, image_reference, classifiedDisease, diseaseConfidences);
+        List<SimpleMessage> recommendationMessages = new ArrayList<>();
+        recommendationMessages.add(new SimpleMessage("This is your \"" + name + "\" plantation."));
+        if (classifiedDisease == "healthy"){
+            recommendationMessages.add(new SimpleMessage("Your plantation is healthy.", 1));
+        } else {
+            recommendationMessages.add(new SimpleMessage("Recognized disease is: " + diseaseDescription));
+        }
+        RecommendationSystem recommendationSystem = new RecommendationSystem(recommendationSystemId ,latitude, longitude, name, image_reference, diseaseDescription, diseaseConfidences, recommendationMessages);
 
         dbReference.child(user.getUid()).child(recommendationSystemId).setValue(recommendationSystem).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
@@ -250,11 +259,19 @@ public class StartRecommendationsDialog extends AppCompatDialogFragment {
     }
 
     private Uri getImageUri(Bitmap source, Bitmap.CompressFormat format, int quality){
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        Context context = getContext();
+        File imageFile = new File(context.getCacheDir(), "image.jpg");
 
-        source.compress(format, quality, os);
-        String path = MediaStore.Images.Media.insertImage(getActivity().getContentResolver(), source, "title", null);
-        return Uri.parse(path);
+        try {
+            FileOutputStream outputStream = new FileOutputStream(imageFile);
+            source.compress(format, quality, outputStream);
+            outputStream.flush();
+            outputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return Uri.fromFile(imageFile);
     }
 
     private String getFileExtension(Uri uri){

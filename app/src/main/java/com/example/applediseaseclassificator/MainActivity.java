@@ -8,18 +8,26 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.squareup.picasso.Picasso;
 
 public class MainActivity extends AppCompatActivity implements NavigationBarView.OnItemSelectedListener, RecommendationSystemRecyclerViewOnClickInterface {
 
     FirebaseAuth auth;
     FirebaseUser user;
-    Button btnLogout;
+    ImageButton btnLogout;
     TextView tvUser;
 
     BottomNavigationView bottomNavigationView;
@@ -63,7 +71,21 @@ public class MainActivity extends AppCompatActivity implements NavigationBarView
             finish();
         }
         else{
-            tvUser.setText(user.getEmail());
+            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("User").child(user.getUid());
+
+            databaseReference.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    UserProfile user = snapshot.getValue(UserProfile.class);
+                    tvUser.setText("Welcome back " + user.firstName + "!");
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Toast.makeText(MainActivity.this, error.toString(), Toast.LENGTH_SHORT).show();
+                }
+            });
+
         }
 
         btnLogout.setOnClickListener(new View.OnClickListener() {
@@ -84,19 +106,19 @@ public class MainActivity extends AppCompatActivity implements NavigationBarView
 
         switch (item.getItemId()){
             case R.id.tab1:
-                getSupportFragmentManager().beginTransaction().replace(R.id.flFragmentCountainer, infoFragment).commit();
+                getSupportFragmentManager().beginTransaction().replace(R.id.flFragmentContainer, infoFragment).commit();
                 return true;
 
             case R.id.tab2:
-                getSupportFragmentManager().beginTransaction().replace(R.id.flFragmentCountainer, classifyDiseaseFragment).commit();
+                getSupportFragmentManager().beginTransaction().replace(R.id.flFragmentContainer, classifyDiseaseFragment).commit();
                 return true;
 
             case R.id.tab3:
-                getSupportFragmentManager().beginTransaction().replace(R.id.flFragmentCountainer, weatherForecastFragment).commit();
+                getSupportFragmentManager().beginTransaction().replace(R.id.flFragmentContainer, recommendationSystemsFragment).commit();
                 return true;
 
             case R.id.tab4:
-                getSupportFragmentManager().beginTransaction().replace(R.id.flFragmentCountainer, recommendationSystemsFragment).commit();
+                getSupportFragmentManager().beginTransaction().replace(R.id.flFragmentContainer, weatherForecastFragment).commit();
                 return true;
         }
         return false;

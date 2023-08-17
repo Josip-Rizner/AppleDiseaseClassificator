@@ -166,8 +166,8 @@ public class ClassifyDiseaseFragment extends Fragment {
 
             image = Bitmap.createScaledBitmap(image, imageSize, imageSize, false);
             diseaseClassificator.classifyDisease(image);
-            setClass = diseaseClassificator.getClassifiedClass();
-            tvClass.setText(setClass);
+            String classDescription = diseaseClassificator.getDiseaseClassDescription(DiseaseClassificator.getClassIndex(diseaseClassificator.getClassifiedClass()));
+            tvClass.setText(classDescription);
         }
         super.onActivityResult(requestCode, resultCode, data);
 
