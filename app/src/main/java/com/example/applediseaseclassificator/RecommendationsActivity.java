@@ -221,8 +221,7 @@ public class RecommendationsActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<Void> task) {
 
                 if (task.isSuccessful()){
-                    Toast.makeText(RecommendationsActivity.this, "Data saved successfully.", Toast.LENGTH_SHORT).show();
-
+                    //Toast.makeText(RecommendationsActivity.this, "Data saved successfully.", Toast.LENGTH_SHORT).show();
                 }
                 else{
                     Toast.makeText(RecommendationsActivity.this, "Couldn't save data, please try later.", Toast.LENGTH_SHORT).show();
@@ -467,7 +466,7 @@ public class RecommendationsActivity extends AppCompatActivity {
             fileReference.putFile(uriImage).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    Toast.makeText(RecommendationsActivity.this, "Image upload successful", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(RecommendationsActivity.this, "Image upload successful", Toast.LENGTH_SHORT).show();
 
                     fileReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                         @Override
@@ -530,7 +529,7 @@ public class RecommendationsActivity extends AppCompatActivity {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 super.onSuccess(statusCode, headers, response);
-                Toast.makeText(RecommendationsActivity.this, "Data fetched successfully ", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(RecommendationsActivity.this, "Data fetched successfully ", Toast.LENGTH_SHORT).show();
                 WeatherData weatherData = WeatherData.fromJson(response);
                 createWeatherCheckRecommendation(weatherData);
             }
@@ -538,7 +537,7 @@ public class RecommendationsActivity extends AppCompatActivity {
             public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
                 super.onFailure(statusCode, headers, throwable, errorResponse);
 
-                Toast.makeText(RecommendationsActivity.this, "Data NOT fetched", Toast.LENGTH_SHORT).show();
+                Toast.makeText(RecommendationsActivity.this, "Couldn't fetch weather data, please try again.", Toast.LENGTH_SHORT).show();
             }
         });
     }
