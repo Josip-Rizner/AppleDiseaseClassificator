@@ -267,15 +267,20 @@ public class RecommendationsActivity extends AppCompatActivity {
         }
         else if(currentDisease == lastClassifiedDisease){
             float treatmentEffectivenessInPercentage = getTreatmentEffectiveness(pastDiseaseConfidences.get(DiseaseClassificator.getClassIndex("healthy")), currentDiseaseConfidences.get(DiseaseClassificator.getClassIndex("healthy")));
-            SimpleMessage message = new SimpleMessage(getTreatmentEffectivenessMessage(treatmentEffectivenessInPercentage), getTreatmentEffectivenessImageUrl(treatmentEffectivenessInPercentage), 40);
+            SimpleMessage message = new SimpleMessage("Your plantation is: \n\n" + getTreatmentEffectivenessMessage(treatmentEffectivenessInPercentage), getTreatmentEffectivenessImageUrl(treatmentEffectivenessInPercentage), 40);
             addRecommendationMessage(message);
         }
 
     }
 
     private float getTreatmentEffectiveness(float confidenceBefore, float confidenceNow){
+        if (confidenceBefore < confidenceNow){
+            return ((1 - confidenceNow) / (1 - confidenceBefore)) *  100;
+        } else if(confidenceBefore > confidenceNow) {
+            return 1 - (confidenceNow / confidenceBefore) * (-100);
+        }
 
-        return 75f;
+        return 0f;
     }
 
     private int getHighestConfidenceIndex(List<Float> diseaseConfidences){
@@ -603,19 +608,19 @@ public class RecommendationsActivity extends AppCompatActivity {
     private String getTreatmentEffectivenessMessage(float effectiveness){
         String message = "";
         if (effectiveness > 50F){
-            message = "A lot better";
+            message = "A lot healthier\n\nTreatment worked as expected.";
         }
         else if (effectiveness > 5F && effectiveness <= 50F){
-            message = "better";
+            message = "Healthier\n\nTreatment worked.";
         }
         else if (effectiveness >= -5F && effectiveness <= 5F){
-            message = "Roughly the same, no progress";
+            message = "Roughly the same, there is no progress";
         }
         else if (effectiveness < -5F && effectiveness >= -50F){
-            message = "worse";
+            message = "Worse\n\nUnfortunately, treatment didn't work as expected";
         }
         else if (effectiveness < -50F){
-            message = "A lot worse";
+            message = "A lot worse\n\nUnfortunately, treatment didn't work at all";
         }
         return message;
     }
