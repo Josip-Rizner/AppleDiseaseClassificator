@@ -67,6 +67,7 @@ public class StartRecommendationsDialog extends AppCompatDialogFragment {
     private SwitchCompat swUseCurrentLocation;
     private Button btnCreateRecommendationSystem, btnClose;
     private ImageView ivStartingImage;
+    LoadingDialog loadingDialog;
 
     private LinearLayout llSetLocation;
 
@@ -109,6 +110,8 @@ public class StartRecommendationsDialog extends AppCompatDialogFragment {
         llSetLocation = view.findViewById(R.id.llOtherLocation);
         mAuth = FirebaseAuth.getInstance();
         user = mAuth.getCurrentUser();
+
+        loadingDialog = new LoadingDialog(getActivity(), "Creating recommendation system, please wait..");
 
         btnCreateRecommendationSystem.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -170,6 +173,7 @@ public class StartRecommendationsDialog extends AppCompatDialogFragment {
     }
 
     private void createRecommendationSystem() {
+        loadingDialog.showLoadingDialog();
         if (latitude == null || longitude == null){
             Toast.makeText(getActivity(), "Location is not set, please try again.", Toast.LENGTH_SHORT).show();
             return;
@@ -249,6 +253,7 @@ public class StartRecommendationsDialog extends AppCompatDialogFragment {
 
                 if (task.isSuccessful()){
                     Toast.makeText(getActivity(), "Data saved successfully.", Toast.LENGTH_SHORT).show();
+                    loadingDialog.dismissLoadingDialog();
                     openCreatedRecommendationSystem(recommendationSystemId);
                 }
                 else{
