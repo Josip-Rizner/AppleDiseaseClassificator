@@ -53,8 +53,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import cz.msebera.android.httpclient.Header;
@@ -239,7 +237,7 @@ public class RecommendationsActivity extends AppCompatActivity {
     private void createTreatmentRecommendation() {
         List<Float> lastDiseaseConfidences = getDiseaseConfidencesFromLastCheck();
         String className = DiseaseClassificator.getDiseaseName(getHighestConfidenceIndex(lastDiseaseConfidences));
-        SimpleMessage message = new SimpleMessage("this is treatment recommendation", 0);
+        SimpleMessage message = new SimpleMessage("Treatment recommendation:\n\n\t\t" + DiseaseClassificator.getDiseaseTreatmentRecommendation(className) + "\n\nWarning: read manufacturer's instructions regarding dosage and intervals between treatments", 0);
         addRecommendationMessage(message);
     }
 
@@ -267,15 +265,20 @@ public class RecommendationsActivity extends AppCompatActivity {
         }
         else if(currentDisease == lastClassifiedDisease){
             float treatmentEffectivenessInPercentage = getTreatmentEffectiveness(pastDiseaseConfidences.get(DiseaseClassificator.getClassIndex("healthy")), currentDiseaseConfidences.get(DiseaseClassificator.getClassIndex("healthy")));
-            SimpleMessage message = new SimpleMessage(getTreatmentEffectivenessMessage(treatmentEffectivenessInPercentage), getTreatmentEffectivenessImageUrl(treatmentEffectivenessInPercentage), 40);
+            SimpleMessage message = new SimpleMessage("Your plantation is: \n\n" + getTreatmentEffectivenessMessage(treatmentEffectivenessInPercentage), getTreatmentEffectivenessImageUrl(treatmentEffectivenessInPercentage), 40);
             addRecommendationMessage(message);
         }
 
     }
 
     private float getTreatmentEffectiveness(float confidenceBefore, float confidenceNow){
+        if (confidenceBefore < confidenceNow){
+            return ((1 - confidenceNow) / (1 - confidenceBefore)) *  100;
+        } else if(confidenceBefore > confidenceNow) {
+            return 1 - (confidenceNow / confidenceBefore) * (-100);
+        }
 
-        return 75f;
+        return 0f;
     }
 
     private int getHighestConfidenceIndex(List<Float> diseaseConfidences){
@@ -308,11 +311,11 @@ public class RecommendationsActivity extends AppCompatActivity {
         addRecommendationMessage(message);
     }
 
-    private void createWeatherCheckRecommendation(WeatherData weatherData){
+    private void createTreatmentTimeRecommendationBasedOnWeather(WeatherData weatherData){
         List<Integer> weatherIds = weatherData.getWeatherIdsList();
         List<String> date_time = weatherData.getDateTimeList();
-        //24 is 3 days since forecast is in steps of 3 hours
-        List<String> treatmentWindow = findTreatmentWindow(weatherIds, date_time, 24);
+        //8 is 1 day since forecast is in steps of 3 hours
+        List<String> treatmentWindow = findTreatmentWindow(weatherIds, date_time, 16);
         int mostOccurring;
 
         if(treatmentWindow.size() == 0){
@@ -331,7 +334,7 @@ public class RecommendationsActivity extends AppCompatActivity {
 
         }
         else {
-            message = new SimpleMessage("There is window from: " + treatmentWindow.get(0) + " - " + treatmentWindow.get(treatmentWindow.size() - 1) + "\nIn that period it will be " + forecastMessage + "\n\nIt is recommended to threat your plantation as close to the first date as possible for the best results.", url, 20);
+            message = new SimpleMessage("There is window from: " + treatmentWindow.get(0) + " - " + treatmentWindow.get(treatmentWindow.size() - 1) + "\nIn that period it will be " + forecastMessage + "\n\nImportant: read manufacturer's instructions for intervals between treatments and weather conditions for application because it varies", url, 20);
         }
         addRecommendationMessage(message);
     }
@@ -531,7 +534,7 @@ public class RecommendationsActivity extends AppCompatActivity {
                 super.onSuccess(statusCode, headers, response);
                 //Toast.makeText(RecommendationsActivity.this, "Data fetched successfully ", Toast.LENGTH_SHORT).show();
                 WeatherData weatherData = WeatherData.fromJson(response);
-                createWeatherCheckRecommendation(weatherData);
+                createTreatmentTimeRecommendationBasedOnWeather(weatherData);
             }
             @Override
             public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
@@ -603,19 +606,19 @@ public class RecommendationsActivity extends AppCompatActivity {
     private String getTreatmentEffectivenessMessage(float effectiveness){
         String message = "";
         if (effectiveness > 50F){
-            message = "A lot better";
+            message = "A lot healthier\n\nTreatment worked as expected.";
         }
         else if (effectiveness > 5F && effectiveness <= 50F){
-            message = "better";
+            message = "Healthier\n\nTreatment worked.";
         }
         else if (effectiveness >= -5F && effectiveness <= 5F){
-            message = "Roughly the same, no progress";
+            message = "Roughly the same, there is no progress";
         }
         else if (effectiveness < -5F && effectiveness >= -50F){
-            message = "worse";
+            message = "Worse\n\nUnfortunately, treatment didn't work as expected";
         }
         else if (effectiveness < -50F){
-            message = "A lot worse";
+            message = "A lot worse\n\nUnfortunately, treatment didn't work at all";
         }
         return message;
     }

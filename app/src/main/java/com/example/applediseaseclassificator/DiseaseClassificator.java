@@ -139,6 +139,27 @@ public class DiseaseClassificator {
         return classes[position];
     }
 
+    public static String getDiseaseTreatmentRecommendation(String className){
+
+        int classIndex = getClassIndex(className);
+
+        final String[] diseaseTreatmentRecommendation = {"Consult with the expert since it is to complex to classify", //to complex to tell
+                "Treat with Azoxystrobin and Difenconazole-Based Fungicides and Copper-Based Fungicides\n\nExamples:\n-Delan 700 WDG\n-Captan 50\n-Polyram DF", //frog eye leaf spots
+                "It is hard to tell but treating with Azoxystrobin and Difenconazole-Based Fungicides and Copper-Based Fungicides should help\n\nExamples:\n-Chromosul 80", // complex frog eye leaf spots
+                "", //healthy
+                "Treat with Sulfur\n\nExamples:\n-Chromosul 80", //powdery mildew
+                "It is hard to tell but treating with sulfur should help\n\nExamples:\n-Chromosul 80", //complex powdery mildew
+                "Treat with Copper-Based and Mancozeb-Based Fungicides\n\nExamples:\n-Strobe\n-Topaz\n-Vectra\n-Tsineba", //rust
+                "It is hard to tell but treating with Copper-Based and Mancozeb-Based Fungicides should help\n\nExamples:\n-Strobe\n-Topaz", //complex rust
+                "Treat with Copper-Based Fungicides\n\nExamples:\n-Poliram", // rust frog eye leaf spots
+                "Treat with Propiconazole-Based and Captan-Based Fungicides\n\nExamples:\n-Kastor\n-Argo\n-Bellis", //scab
+                "Treat with the mix of Azoxystrobin and Difenconazole-Based and Propiconazole-Based Fungicides but consult with the expert for the best mix", //scab frog eye leaf spots
+                "It is hard to tell but treating with mix of Azoxystrobin and Difenconazole-Based and Propiconazole-Based Fungicides should help. Consult with the expert for the best mix"}; //complex scab frog eye leaf spots
+
+
+        return diseaseTreatmentRecommendation[classIndex];
+    }
+
     public int getImageSize() {
         return imageSize;
     }

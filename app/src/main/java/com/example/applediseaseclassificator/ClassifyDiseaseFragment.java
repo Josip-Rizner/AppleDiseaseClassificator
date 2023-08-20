@@ -74,7 +74,8 @@ public class ClassifyDiseaseFragment extends Fragment {
         }
 
         if(setClass != null){
-            tvClass.setText(setClass);
+            String classDescription = diseaseClassificator.getDiseaseClassDescription(DiseaseClassificator.getClassIndex(setClass));
+            tvClass.setText(classDescription);
         }
 
         super.onResume();
@@ -145,7 +146,8 @@ public class ClassifyDiseaseFragment extends Fragment {
             image = Bitmap.createScaledBitmap(image, imageSize, imageSize, false);
             diseaseClassificator.classifyDisease(image);
             setClass = diseaseClassificator.getClassifiedClass();
-            tvClass.setText(setClass);
+            String classDescription = diseaseClassificator.getDiseaseClassDescription(DiseaseClassificator.getClassIndex(setClass));
+            tvClass.setText(classDescription);
         }
         else{
             Uri dat = null;
@@ -166,7 +168,8 @@ public class ClassifyDiseaseFragment extends Fragment {
 
             image = Bitmap.createScaledBitmap(image, imageSize, imageSize, false);
             diseaseClassificator.classifyDisease(image);
-            String classDescription = diseaseClassificator.getDiseaseClassDescription(DiseaseClassificator.getClassIndex(diseaseClassificator.getClassifiedClass()));
+            setClass = diseaseClassificator.getClassifiedClass();
+            String classDescription = diseaseClassificator.getDiseaseClassDescription(DiseaseClassificator.getClassIndex(setClass));
             tvClass.setText(classDescription);
         }
         super.onActivityResult(requestCode, resultCode, data);
