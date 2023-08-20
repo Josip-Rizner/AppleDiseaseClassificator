@@ -53,8 +53,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import cz.msebera.android.httpclient.Header;
@@ -239,7 +237,7 @@ public class RecommendationsActivity extends AppCompatActivity {
     private void createTreatmentRecommendation() {
         List<Float> lastDiseaseConfidences = getDiseaseConfidencesFromLastCheck();
         String className = DiseaseClassificator.getDiseaseName(getHighestConfidenceIndex(lastDiseaseConfidences));
-        SimpleMessage message = new SimpleMessage("this is treatment recommendation", 0);
+        SimpleMessage message = new SimpleMessage("Treatment recommendation:\n\n\t\t" + DiseaseClassificator.getDiseaseTreatmentRecommendation(className) + "\n\nWarning: read manufacturer's instructions regarding dosage and intervals between treatments", 0);
         addRecommendationMessage(message);
     }
 
@@ -313,11 +311,11 @@ public class RecommendationsActivity extends AppCompatActivity {
         addRecommendationMessage(message);
     }
 
-    private void createWeatherCheckRecommendation(WeatherData weatherData){
+    private void createTreatmentTimeRecommendationBasedOnWeather(WeatherData weatherData){
         List<Integer> weatherIds = weatherData.getWeatherIdsList();
         List<String> date_time = weatherData.getDateTimeList();
-        //24 is 3 days since forecast is in steps of 3 hours
-        List<String> treatmentWindow = findTreatmentWindow(weatherIds, date_time, 24);
+        //8 is 1 day since forecast is in steps of 3 hours
+        List<String> treatmentWindow = findTreatmentWindow(weatherIds, date_time, 16);
         int mostOccurring;
 
         if(treatmentWindow.size() == 0){
@@ -336,7 +334,7 @@ public class RecommendationsActivity extends AppCompatActivity {
 
         }
         else {
-            message = new SimpleMessage("There is window from: " + treatmentWindow.get(0) + " - " + treatmentWindow.get(treatmentWindow.size() - 1) + "\nIn that period it will be " + forecastMessage + "\n\nIt is recommended to threat your plantation as close to the first date as possible for the best results.", url, 20);
+            message = new SimpleMessage("There is window from: " + treatmentWindow.get(0) + " - " + treatmentWindow.get(treatmentWindow.size() - 1) + "\nIn that period it will be " + forecastMessage + "\n\nImportant: read manufacturer's instructions for intervals between treatments and weather conditions for application because it varies", url, 20);
         }
         addRecommendationMessage(message);
     }
@@ -536,7 +534,7 @@ public class RecommendationsActivity extends AppCompatActivity {
                 super.onSuccess(statusCode, headers, response);
                 //Toast.makeText(RecommendationsActivity.this, "Data fetched successfully ", Toast.LENGTH_SHORT).show();
                 WeatherData weatherData = WeatherData.fromJson(response);
-                createWeatherCheckRecommendation(weatherData);
+                createTreatmentTimeRecommendationBasedOnWeather(weatherData);
             }
             @Override
             public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
