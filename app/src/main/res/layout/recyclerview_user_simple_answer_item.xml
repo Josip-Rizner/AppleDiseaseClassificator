@@ -12,6 +12,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@drawable/custom_user_message"
+        android:padding="5dp"
         android:layout_gravity="end"
         android:orientation="vertical">
 
@@ -23,6 +24,16 @@
             android:padding="5dp"
             android:text="test"
             android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvSimpleUserAnswerTimestamp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="7dp"
+            android:layout_gravity="end"
+            android:textStyle="italic"
+            android:textSize="10sp"
+            android:text="timestamp"/>
 
     </LinearLayout>
 
