@@ -12,6 +12,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.squareup.picasso.Picasso;
 
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 
 public class RecommendationMessagesAdapter extends RecyclerView.Adapter<RecommendationMessagesAdapter.RecommendationMessagesViewHolder> {
@@ -27,7 +29,7 @@ public class RecommendationMessagesAdapter extends RecyclerView.Adapter<Recommen
 
     public static class RecommendationMessagesViewHolder extends RecyclerView.ViewHolder{
 
-        public TextView tvMessage, tvUserSimpleRequest, tvUserRequestWithImage, tvSimpleAnswerWithImage;
+        public TextView tvMessage, tvUserSimpleRequest, tvUserRequestWithImage, tvSimpleAnswerWithImage, tvSimpleUserRequestWithImageTimestamp, tvSimpleAnswerWithImageTimestamp, tvSimpleUserAnswerTimestamp, tvMessageTimestamp;
         public ImageView ivUserRequestWithImage, ivSimpleAnswerWithImage;
 
 
@@ -35,14 +37,18 @@ public class RecommendationMessagesAdapter extends RecyclerView.Adapter<Recommen
             super(itemView);
 
             this.tvMessage = itemView.findViewById(R.id.tvMessage);
+            this.tvMessageTimestamp = itemView.findViewById(R.id.tvMessageTimestamp);
 
             this.tvUserSimpleRequest = itemView.findViewById(R.id.tvSimpleUserAnswer);
+            this.tvSimpleUserAnswerTimestamp = itemView.findViewById(R.id.tvSimpleUserAnswerTimestamp);
 
             this.tvUserRequestWithImage = itemView.findViewById(R.id.tvSimpleUserRequestWithImage);
             this.ivUserRequestWithImage = itemView.findViewById(R.id.ivSimpleUserRequestWithImage);
+            this.tvSimpleUserRequestWithImageTimestamp = itemView.findViewById(R.id.tvSimpleUserRequestWithImageTimestamp);
 
             this.tvSimpleAnswerWithImage = itemView.findViewById(R.id.tvSimpleAnswerWithImage);
             this.ivSimpleAnswerWithImage = itemView.findViewById(R.id.ivSimpleAnswerWithImage);
+            this.tvSimpleAnswerWithImageTimestamp = itemView.findViewById(R.id.tvSimpleAnswerWithImageTimestamp);
         }
 
     }
@@ -78,12 +84,15 @@ public class RecommendationMessagesAdapter extends RecyclerView.Adapter<Recommen
 
         if(message.getRecommendationMessageType() >= 0 && message.getRecommendationMessageType() <= 9){
             holder.tvMessage.setText(message.getMessage());
+            holder.tvMessageTimestamp.setText(getDateTimeFromTimestamp(message.getTimestamp()));
         }
         else if(message.getRecommendationMessageType() >= 10 && message.getRecommendationMessageType() <= 19){
             holder.tvUserSimpleRequest.setText(message.getMessage());
+            holder.tvSimpleUserAnswerTimestamp.setText(getDateTimeFromTimestamp(message.getTimestamp()));
         }
         else if(message.getRecommendationMessageType() == 20 || message.getRecommendationMessageType() == 40){
             holder.tvSimpleAnswerWithImage.setText(message.getMessage());
+            holder.tvSimpleAnswerWithImageTimestamp.setText(getDateTimeFromTimestamp(message.getTimestamp()));
 
             Picasso.with(context)
                     .load(message.getImageReference())
@@ -94,6 +103,7 @@ public class RecommendationMessagesAdapter extends RecyclerView.Adapter<Recommen
         }
         else if(message.getRecommendationMessageType() == 30){
             holder.tvUserRequestWithImage.setText(message.getMessage());
+            holder.tvSimpleUserRequestWithImageTimestamp.setText(getDateTimeFromTimestamp(message.getTimestamp()));
 
             Picasso.with(context)
                     .load(message.getImageReference())
@@ -113,6 +123,13 @@ public class RecommendationMessagesAdapter extends RecyclerView.Adapter<Recommen
     @Override
     public int getItemCount() {
         return recommendationMessages.size();
+    }
+
+    private String getDateTimeFromTimestamp(long timestamp){
+        Timestamp ts = new Timestamp(timestamp);
+        Date date = ts;
+
+        return date.toString().substring(0, date.toString().lastIndexOf(":"));
     }
 
 }

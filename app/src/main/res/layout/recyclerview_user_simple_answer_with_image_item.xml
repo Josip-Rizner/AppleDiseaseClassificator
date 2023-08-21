@@ -8,30 +8,50 @@
     android:layout_margin="5dp">
 
     <LinearLayout
-        android:id="@+id/llInfoMessageContainer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@drawable/custom_user_message"
         android:padding="5dp"
         android:layout_gravity="end"
-        android:orientation="horizontal">
+        android:orientation="vertical">
 
-        <ImageView
-            android:id="@+id/ivSimpleUserRequestWithImage"
-            android:layout_gravity="center_vertical"
-            android:background="@drawable/rounded_corners"
-            android:layout_width="100dp"
-            android:layout_height="100dp"/>
-
-        <TextView
-            android:id="@+id/tvSimpleUserRequestWithImage"
+        <LinearLayout
+            android:id="@+id/llInfoMessageContainer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginHorizontal="5dp"
-            android:text="test"
-            android:textStyle="bold" />
+            android:layout_gravity="end"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/ivSimpleUserRequestWithImage"
+                android:layout_gravity="center_vertical"
+                android:background="@drawable/rounded_corners"
+                android:layout_width="100dp"
+                android:layout_height="100dp"/>
+
+            <TextView
+                android:id="@+id/tvSimpleUserRequestWithImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginHorizontal="5dp"
+                android:text="timestamp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvSimpleUserRequestWithImageTimestamp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="7dp"
+            android:layout_gravity="end"
+            android:textStyle="italic"
+            android:textSize="10sp"
+            android:text="test"/>
 
     </LinearLayout>
+
+
 
 </LinearLayout>
