@@ -37,33 +37,18 @@ public class RecommendationSystemsFragment extends Fragment{
     private DatabaseReference databaseReference;
     private List<RecommendationSystem> recommendationSystemList;
 
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-
-    private String mParam1;
-    private String mParam2;
-
     public RecommendationSystemsFragment() {
         // Required empty public constructor
     }
 
-    public static RecommendationSystemsFragment newInstance(String param1, String param2) {
+    public static RecommendationSystemsFragment newInstance() {
         RecommendationSystemsFragment fragment = new RecommendationSystemsFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
         return fragment;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
     @Override
