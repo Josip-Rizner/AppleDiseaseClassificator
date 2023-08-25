@@ -32,10 +32,8 @@ public class InfoFragment extends Fragment {
         // Required empty public constructor
     }
 
-    public static InfoFragment newInstance(String param1, String param2) {
+    public static InfoFragment newInstance() {
         InfoFragment fragment = new InfoFragment();
-        Bundle args = new Bundle();
-
         return fragment;
     }
 

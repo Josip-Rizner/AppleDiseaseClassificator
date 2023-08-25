@@ -1,8 +1,6 @@
 package com.example.applediseaseclassificator;
 
 import android.annotation.SuppressLint;
-import android.content.Intent;
-import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -22,7 +20,6 @@ public class WeatherData {
         try {
             WeatherData weatherData = new WeatherData();
             weatherForecast = jsonObject.getJSONArray("list");
-            weatherForecast = weatherForecast;
             weatherData.city =  jsonObject.getJSONObject("city").getString("name");
             int condition = weatherForecast.getJSONObject(0).getJSONArray("weather").getJSONObject(0).getInt("id");
             weatherData.currentWeatherType = weatherForecast.getJSONObject(0).getJSONArray("weather").getJSONObject(0).getString("main");
